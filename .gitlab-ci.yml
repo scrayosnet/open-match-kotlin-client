@@ -1,0 +1,194 @@
+image: 'registry.dev.scrayos.net/scrayosnet/developmentenvironments/gradle:7-jdk17'
+
+
+cache:
+- key: '$CI_PIPELINE_ID'
+  paths:
+  - 'build'
+- key: '$CI_COMMIT_REF_SLUG'
+  paths:
+  - 'build-cache'
+  - '.gradle'
+
+
+variables:
+  ORG_GRADLE_PROJECT_mavenRepositoryTokenType: 'Job-Token'
+  ORG_GRADLE_PROJECT_mavenRepositoryToken: '$CI_JOB_TOKEN'
+
+
+stages:
+- 'compile'
+- 'test'
+- 'coverage'
+- 'quality assurance'
+- 'deploy'
+- 'release'
+
+
+.release-job: &release-job
+  rules:
+  - if: '$CI_COMMIT_TAG'
+  allow_failure: false
+
+.production-job: &production-job
+  rules:
+  - if: '$CI_COMMIT_BRANCH == "main"'
+  - if: '$CI_COMMIT_BRANCH =~ /^hotfix\/.+$/'
+  - if: '$CI_COMMIT_TAG'
+  # failure can be decided for each job individually
+
+.development-job: &development-job
+  rules:
+  - if: '$CI_COMMIT_BRANCH =~ /^dev\/.+$/'
+  allow_failure: true
+
+
+# compile
+
+compile:
+  interruptible: true
+  stage: 'compile'
+  script:
+  - './gradlew assemble'
+
+
+# test
+
+.test: &test
+  interruptible: true
+  stage: 'test'
+  services:
+  - 'docker:dind'
+  variables:
+    DOCKER_HOST: 'tcp://docker:2375'
+    DOCKER_TLS_CERTDIR: ''
+  script:
+  - './gradlew check'
+  artifacts:
+    paths:
+    - 'build/jacoco/test.exec'
+    - 'build/test-results/test/'
+    reports:
+      junit:
+      - 'build/test-results/test/TEST-*.xml'
+    when: 'always'
+
+test-production:
+  <<: *test
+  <<: *production-job
+
+test-development:
+  <<: *test
+  <<: *development-job
+
+
+# jacoco
+
+.jacoco: &jacoco
+  interruptible: true
+  stage: 'coverage'
+  script:
+  - './gradlew jacocoTestReport'
+  - 'awk -F"," ''{ instructions += $4 + $5; covered += $5 } END { print covered, "/", instructions, "instructions covered"; print 100*covered/instructions "% covered" }'' build/reports/jacoco/test/jacocoTestReport.csv'
+  artifacts:
+    paths:
+    - 'build/reports/jacoco/test/jacocoTestReport.xml'
+    when: 'always'
+  coverage: '/(\d+(?:\.\d+)?)% covered/'
+
+jacoco-production:
+  <<: *jacoco
+  <<: *production-job
+
+jacoco-development:
+  <<: *jacoco
+  <<: *development-job
+
+
+# pitest
+
+.pitest: &pitest
+  interruptible: true
+  stage: 'coverage'
+  services:
+  - 'docker:dind'
+  variables:
+    DOCKER_HOST: 'tcp://docker:2375'
+    DOCKER_TLS_CERTDIR: ''
+  script:
+  - './gradlew pitest'
+  cache:
+  - key: '$CI_PROJECT_ID'
+    paths:
+    - 'build/pitHistory.txt'
+  artifacts:
+    paths:
+    - 'build/reports/pitest'
+    when: 'always'
+  coverage: '/>> Generated \d+ mutations Killed \d+ \((\d+(?:\.\d+)?)%\)/'
+
+pitest-production:
+  <<: *pitest
+  <<: *production-job
+
+pitest-development:
+  <<: *pitest
+  <<: *development-job
+
+
+# sonarqube
+
+.sonarqube: &sonarqube
+  interruptible: true
+  stage: 'quality assurance'
+  script:
+  - './gradlew sonarqube -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.pitest.mode=reuseReport'
+
+sonarqube-production:
+  <<: *sonarqube
+  <<: *production-job
+
+sonarqube-development:
+  <<: *sonarqube
+  <<: *development-job
+
+
+# deploy
+
+maven:
+  stage: 'deploy'
+  script:
+  - './gradlew publish'
+  artifacts:
+    paths:
+    - 'build/libs/*'
+  <<: *production-job
+
+
+# pages
+
+pages:
+  stage: 'deploy'
+  script:
+  - './gradlew javadoc'
+  - 'mv build/docs/javadoc public'
+  artifacts:
+    paths:
+    - 'public'
+  <<: *release-job
+
+
+# release
+
+release:
+  image: 'registry.gitlab.com/gitlab-org/release-cli:latest'
+  stage: 'release'
+  # necessary until https://gitlab.com/gitlab-org/gitlab/-/issues/223856
+  script:
+  - 'echo Preparing Release'
+  release:
+    name: '$CI_COMMIT_TAG'
+    tag_name: '$CI_COMMIT_TAG'
+    ref: '$CI_COMMIT_TAG'
+    description: '${RELEASE_DESCRIPTION//\{\{newline\}\}/\\n}'
+  <<: *release-job
