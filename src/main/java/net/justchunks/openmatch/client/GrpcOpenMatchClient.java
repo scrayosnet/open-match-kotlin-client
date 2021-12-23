@@ -59,7 +59,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     //<editor-fold desc="port">
     /** Der Schlüssel der Umgebungsvariable, aus der der Host für das Open Match Frontend ausgelesen werden kann. */
     @NotNull
-    private static final String FRONTEND_HOST_ENV_KEY = "OPEN_MATCH_FRONTEND_GRPC_PORT";
+    private static final String FRONTEND_HOST_ENV_KEY = "OPEN_MATCH_FRONTEND_GRPC_HOST";
     //</editor-fold>
 
     //<editor-fold desc="port">
