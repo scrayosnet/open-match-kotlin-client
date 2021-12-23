@@ -8,7 +8,7 @@ val mavenRepositoryToken: String by project
 
 // provide general GAV coordinates
 group = "net.justchunks"
-version = "0.0.2"
+version = "0.0.3-SNAPSHOT"
 description = "Open Match Java Client"
 
 // hook the plugins for the builds
