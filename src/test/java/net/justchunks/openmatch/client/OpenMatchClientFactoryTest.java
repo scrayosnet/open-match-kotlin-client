@@ -3,12 +3,14 @@ package net.justchunks.openmatch.client;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+@Disabled("The factory depends on the presence of the host env key, so we cannot execute the tests for now.")
 class OpenMatchClientFactoryTest {
 
     private static ScheduledExecutorService executorService;
