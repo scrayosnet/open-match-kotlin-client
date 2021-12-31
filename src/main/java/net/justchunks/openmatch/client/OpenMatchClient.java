@@ -1,18 +1,16 @@
 package net.justchunks.openmatch.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
+import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
 import openmatch.Frontend.WatchAssignmentsResponse;
 import openmatch.Messages.Assignment;
 import openmatch.Messages.Backfill;
-import openmatch.Messages.SearchFields;
 import openmatch.Messages.Ticket;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -42,11 +40,8 @@ public interface OpenMatchClient extends AutoCloseable {
 
     //<editor-fold desc="ticket">
     @NotNull
-    @Contract(value = "_, _ -> new")
-    ListenableFuture<Ticket> createTicket(
-        @NotNull SearchFields searchFields,
-        @NotNull final Map<@NotNull String, @NotNull Any> extensions
-    );
+    @Contract(value = "_ -> new")
+    ListenableFuture<Ticket> createTicket(@NotNull final TicketTemplate template);
 
     @NotNull
     @Contract(value = "_ -> new")
@@ -61,11 +56,8 @@ public interface OpenMatchClient extends AutoCloseable {
 
     //<editor-fold desc="backfill">
     @NotNull
-    @Contract(value = "_, _ -> new")
-    ListenableFuture<Backfill> createBackfill(
-        @NotNull final SearchFields searchFields,
-        @NotNull final Map<@NotNull String, @NotNull Any> extensions
-    );
+    @Contract(value = "_ -> new")
+    ListenableFuture<Backfill> createBackfill(@NotNull final TicketTemplate template);
 
     @NotNull
     @Contract(value = "_ -> new")

@@ -2,12 +2,12 @@ package net.justchunks.openmatch.client;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import net.justchunks.openmatch.client.observer.CallbackStreamObserver;
+import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillRequest;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
 import openmatch.Frontend.CreateBackfillRequest;
@@ -23,7 +23,6 @@ import openmatch.FrontendServiceGrpc;
 import openmatch.FrontendServiceGrpc.FrontendServiceFutureStub;
 import openmatch.Messages.Assignment;
 import openmatch.Messages.Backfill;
-import openmatch.Messages.SearchFields;
 import openmatch.Messages.Ticket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +31,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 import org.jetbrains.annotations.VisibleForTesting;
 
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -157,32 +155,18 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     //<editor-fold desc="implementation">
     @NotNull
     @Override
-    @Contract(value = "_, _ -> new")
-    public ListenableFuture<Ticket> createTicket(
-        @NotNull final SearchFields searchFields,
-        @NotNull final Map<@NotNull String, @NotNull Any> extensions
-    ) {
+    @Contract(value = "_ -> new")
+    public ListenableFuture<Ticket> createTicket(@NotNull final TicketTemplate template) {
         // check that there were actually search fields supplied
         Preconditions.checkNotNull(
-            searchFields,
-            "The supplied search fields cannot be null!"
-        );
-
-        // check that there were actually extensions supplied
-        Preconditions.checkNotNull(
-            extensions,
-            "The supplied extensions cannot be null!"
+            template,
+            "The supplied template cannot be null!"
         );
 
         // call the endpoint with a new request and relay the future of the response
         return futureStub.createTicket(
             CreateTicketRequest.newBuilder()
-                .setTicket(
-                    Ticket.newBuilder()
-                        .setSearchFields(searchFields)
-                        .putAllExtensions(extensions)
-                        .build()
-                )
+                .setTicket(template.createNewTicket())
                 .build()
         );
     }
@@ -251,32 +235,18 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
 
     @NotNull
     @Override
-    @Contract(value = "_, _ -> new")
-    public ListenableFuture<Backfill> createBackfill(
-        @NotNull final SearchFields searchFields,
-        @NotNull final Map<@NotNull String, @NotNull Any> extensions
-    ) {
+    @Contract(value = "_ -> new")
+    public ListenableFuture<Backfill> createBackfill(@NotNull final TicketTemplate template) {
         // check that there were actually search fields supplied
         Preconditions.checkNotNull(
-            searchFields,
-            "The supplied search fields cannot be null!"
-        );
-
-        // check that there were actually extensions supplied
-        Preconditions.checkNotNull(
-            extensions,
-            "The supplied extensions cannot be null!"
+            template,
+            "The supplied template cannot be null!"
         );
 
         // call the endpoint with a new request and relay the future of the response
         return futureStub.createBackfill(
             CreateBackfillRequest.newBuilder()
-                .setBackfill(
-                    Backfill.newBuilder()
-                        .setSearchFields(searchFields)
-                        .putAllExtensions(extensions)
-                        .build()
-                )
+                .setBackfill(template.createNewBackfill())
                 .build()
         );
     }
