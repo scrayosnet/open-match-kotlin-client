@@ -1,7 +1,6 @@
 package net.justchunks.openmatch.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.Empty;
 import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
 import openmatch.Frontend.WatchAssignmentsResponse;
@@ -11,6 +10,7 @@ import openmatch.Messages.Ticket;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -41,15 +41,15 @@ public interface OpenMatchClient extends AutoCloseable {
     //<editor-fold desc="ticket">
     @NotNull
     @Contract(value = "_ -> new")
-    ListenableFuture<Ticket> createTicket(@NotNull final TicketTemplate template);
+    CompletableFuture<Ticket> createTicket(@NotNull final TicketTemplate template);
 
     @NotNull
     @Contract(value = "_ -> new")
-    ListenableFuture<Empty> deleteTicket(@NotNull String ticketId);
+    CompletableFuture<Void> deleteTicket(@NotNull String ticketId);
 
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    ListenableFuture<Ticket> getTicket(@NotNull String ticketId);
+    CompletableFuture<Ticket> getTicket(@NotNull String ticketId);
 
     void watchAssignments(@NotNull String ticketId, @NotNull Consumer<@NotNull WatchAssignmentsResponse> callback);
     //</editor-fold>
@@ -57,23 +57,23 @@ public interface OpenMatchClient extends AutoCloseable {
     //<editor-fold desc="backfill">
     @NotNull
     @Contract(value = "_ -> new")
-    ListenableFuture<Backfill> createBackfill(@NotNull final TicketTemplate template);
+    CompletableFuture<Backfill> createBackfill(@NotNull final TicketTemplate template);
 
     @NotNull
     @Contract(value = "_ -> new")
-    ListenableFuture<Empty> deleteBackfill(@NotNull String backfillId);
+    CompletableFuture<Void> deleteBackfill(@NotNull String backfillId);
 
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    ListenableFuture<Backfill> getBackfill(@NotNull String backfillId);
+    CompletableFuture<Backfill> getBackfill(@NotNull String backfillId);
 
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    ListenableFuture<Backfill> updateBackfill(@NotNull Backfill backfill);
+    CompletableFuture<Backfill> updateBackfill(@NotNull Backfill backfill);
 
     @NotNull
     @Contract(value = "_, _ -> new")
-    ListenableFuture<AcknowledgeBackfillResponse> acknowledgeBackfill(
+    CompletableFuture<AcknowledgeBackfillResponse> acknowledgeBackfill(
         @NotNull String backfillId,
         @NotNull Assignment assignment
     );

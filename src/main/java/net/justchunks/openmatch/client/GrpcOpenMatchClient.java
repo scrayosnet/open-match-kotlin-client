@@ -1,8 +1,6 @@
 package net.justchunks.openmatch.client;
 
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.Empty;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -31,9 +29,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import static net.javacrumbs.futureconverter.java8guava.FutureConverter.toCompletableFuture;
 
 /**
  * Eine {@link GrpcOpenMatchClient} stellt eine gRPC-Implementation des {@link OpenMatchClient Open Match Clients} dar.
@@ -156,7 +157,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     @NotNull
     @Override
     @Contract(value = "_ -> new")
-    public ListenableFuture<Ticket> createTicket(@NotNull final TicketTemplate template) {
+    public CompletableFuture<@NotNull Ticket> createTicket(@NotNull final TicketTemplate template) {
         // check that there were actually search fields supplied
         Preconditions.checkNotNull(
             template,
@@ -164,17 +165,17 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.createTicket(
+        return toCompletableFuture(futureStub.createTicket(
             CreateTicketRequest.newBuilder()
                 .setTicket(template.createNewTicket())
                 .build()
-        );
+        ));
     }
 
     @NotNull
     @Override
     @Contract(value = "_ -> new")
-    public ListenableFuture<Empty> deleteTicket(@NotNull final String ticketId) {
+    public CompletableFuture<Void> deleteTicket(@NotNull final String ticketId) {
         // check that there was actually a ticket id supplied
         Preconditions.checkNotNull(
             ticketId,
@@ -182,17 +183,17 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.deleteTicket(
+        return toCompletableFuture(futureStub.deleteTicket(
             DeleteTicketRequest.newBuilder()
                 .setTicketId(ticketId)
                 .build()
-        );
+        )).thenApply(empty -> null);
     }
 
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public ListenableFuture<Ticket> getTicket(@NotNull final String ticketId) {
+    public CompletableFuture<@NotNull Ticket> getTicket(@NotNull final String ticketId) {
         // check that there was actually a ticket id supplied
         Preconditions.checkNotNull(
             ticketId,
@@ -200,11 +201,11 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.getTicket(
+        return toCompletableFuture(futureStub.getTicket(
             GetTicketRequest.newBuilder()
                 .setTicketId(ticketId)
                 .build()
-        );
+        ));
     }
 
     @Override
@@ -236,7 +237,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     @NotNull
     @Override
     @Contract(value = "_ -> new")
-    public ListenableFuture<Backfill> createBackfill(@NotNull final TicketTemplate template) {
+    public CompletableFuture<@NotNull Backfill> createBackfill(@NotNull final TicketTemplate template) {
         // check that there were actually search fields supplied
         Preconditions.checkNotNull(
             template,
@@ -244,17 +245,17 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.createBackfill(
+        return toCompletableFuture(futureStub.createBackfill(
             CreateBackfillRequest.newBuilder()
                 .setBackfill(template.createNewBackfill())
                 .build()
-        );
+        ));
     }
 
     @NotNull
     @Override
     @Contract(value = "_ -> new")
-    public ListenableFuture<@NotNull Empty> deleteBackfill(@NotNull final String backfillId) {
+    public CompletableFuture<Void> deleteBackfill(@NotNull final String backfillId) {
         // check that there was actually a backfill id supplied
         Preconditions.checkNotNull(
             backfillId,
@@ -262,17 +263,17 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.deleteBackfill(
+        return toCompletableFuture(futureStub.deleteBackfill(
             DeleteBackfillRequest.newBuilder()
                 .setBackfillId(backfillId)
                 .build()
-        );
+        )).thenApply(empty -> null);
     }
 
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public ListenableFuture<@NotNull Backfill> getBackfill(@NotNull final String backfillId) {
+    public CompletableFuture<@NotNull Backfill> getBackfill(@NotNull final String backfillId) {
         // check that there was actually a backfill id supplied
         Preconditions.checkNotNull(
             backfillId,
@@ -280,17 +281,17 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.getBackfill(
+        return toCompletableFuture(futureStub.getBackfill(
             GetBackfillRequest.newBuilder()
                 .setBackfillId(backfillId)
                 .build()
-        );
+        ));
     }
 
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public ListenableFuture<@NotNull Backfill> updateBackfill(@NotNull final Backfill backfill) {
+    public CompletableFuture<@NotNull Backfill> updateBackfill(@NotNull final Backfill backfill) {
         // check that there was actually a backfill supplied
         Preconditions.checkNotNull(
             backfill,
@@ -298,17 +299,17 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.updateBackfill(
+        return toCompletableFuture(futureStub.updateBackfill(
             UpdateBackfillRequest.newBuilder()
                 .setBackfill(backfill)
                 .build()
-        );
+        ));
     }
 
     @NotNull
     @Override
     @Contract(value = "_, _ -> new", pure = true)
-    public ListenableFuture<@NotNull AcknowledgeBackfillResponse> acknowledgeBackfill(
+    public CompletableFuture<@NotNull AcknowledgeBackfillResponse> acknowledgeBackfill(
         @NotNull final String backfillId,
         @NotNull final Assignment assignment
     ) {
@@ -325,12 +326,12 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         );
 
         // call the endpoint with a new request and relay the future of the response
-        return futureStub.acknowledgeBackfill(
+        return toCompletableFuture(futureStub.acknowledgeBackfill(
             AcknowledgeBackfillRequest.newBuilder()
                 .setBackfillId(backfillId)
                 .setAssignment(assignment)
                 .build()
-        );
+        ));
     }
     //</editor-fold>
 
