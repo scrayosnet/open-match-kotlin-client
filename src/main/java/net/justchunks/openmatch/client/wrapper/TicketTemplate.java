@@ -462,7 +462,7 @@ public final class TicketTemplate {
          */
         @NotNull
         @Contract(value = "_, _ -> this", mutates = "this")
-        public TicketTemplateBuilder addExtension(@NotNull final String key, byte @NotNull [] value) {
+        public TicketTemplateBuilder addExtension(@NotNull final String key, final byte @NotNull [] value) {
             // apply the new metadata to this builder
             extensions.put(key, Any.pack(BytesValue.of(ByteString.copyFrom(value))));
 
