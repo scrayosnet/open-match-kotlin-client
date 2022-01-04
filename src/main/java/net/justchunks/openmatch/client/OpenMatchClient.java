@@ -1,6 +1,5 @@
 package net.justchunks.openmatch.client;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
 import openmatch.Frontend.WatchAssignmentsResponse;
@@ -9,6 +8,7 @@ import openmatch.Messages.Backfill;
 import openmatch.Messages.Ticket;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -26,9 +26,9 @@ import java.util.function.Consumer;
  * Änderungen werden nicht zwischengespeichert und so direkt an das Frontend übertragen.
  *
  * <p>Alle Schnittstellen werden asynchron ausgeführt und sind non-blocking. Sie bieten (falls sinnvoll) eine {@link
- * ListenableFuture Zukunft} an, für die Listener registriert werden können, die ausgeführt werden, sobald die Aktion
- * innerhalb von gRPC abgeschlossen wurde. Falls mehr als eine Rückgabe erwartet wird, so kann ein {@link Consumer
- * Callback} angegeben werden, der die eintreffenden Antworten verarbeitet.
+ * CompletableFuture Zukunft} an, für die weitere Verarbeiter registriert werden können, die ausgeführt werden, sobald
+ * die Aktion innerhalb von gRPC abgeschlossen wurde. Falls mehr als eine Rückgabe erwartet wird, so kann ein {@link
+ * Consumer Callback} angegeben werden, der die eintreffenden Antworten verarbeitet.
  *
  * <p>Die Signaturen der Endpunkte des Frontends wurden teilweise geringfügig auf unsere Struktur angepasst,
  * entsprechen aber im Allgemeinen den offiziellen Schnittstellen. Der Client wird immer kompatibel zu den offiziellen
@@ -39,41 +39,170 @@ import java.util.function.Consumer;
 public interface OpenMatchClient extends AutoCloseable {
 
     //<editor-fold desc="ticket">
+
+    /**
+     * Erstellt innerhalb von Open-Match ein neues {@link Ticket} mit den Metadaten eines bestimmten {@link
+     * TicketTemplate Templates}. Die {@link Ticket#getId() ID} und die {@link Ticket#getCreateTime() Erstellungszeit}
+     * werden von Open-Match festgelegt. Die {@link Assignment Game-Server-Zuweisung} wird von dem Director festgelegt,
+     * nachdem dieses {@link Ticket} einem Match zugewiesen wurde. Der Status der {@link Assignment Zuweisung} kann über
+     * {@link #watchAssignments(String, Consumer)} beobachtet werden.
+     *
+     * @param template Das {@link TicketTemplate}, dessen Metadaten für die Erstellung des {@link Ticket Tickets}
+     *                 genutzt werden sollen.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem neuen {@link Ticket}, die abgeschlossen
+     *     wird, sobald das {@link Ticket} erstellt wurde oder ein Fehler dabei auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_ -> new")
-    CompletableFuture<Ticket> createTicket(@NotNull final TicketTemplate template);
+    CompletableFuture<@NotNull Ticket> createTicket(@NotNull final TicketTemplate template);
 
+    /**
+     * Löscht ein bereits existierendes {@link Ticket} mit einer bestimmten, einzigartigen ID innerhalb von Open-Match.
+     * Wurde dieses {@link Ticket} bereits einem Match zugewiesen, so hat diese Operation keine Auswirkungen. Das {@link
+     * Ticket} wird jedoch augenblicklich nicht weiter für die Erstellung von Matches berücksichtigt. Falls kein solches
+     * {@link Ticket} existiert, bewirkt diese Methode keine Veränderung.
+     *
+     * @param ticketId Die einzigartige ID des {@link Ticket Tickets}, das innerhalb von Open-Match gelöscht werden
+     *                 soll.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft}, die abgeschlossen wird, sobald das {@link
+     *     Ticket} gelöscht wurde oder ein Fehler dabei auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_ -> new")
     CompletableFuture<Void> deleteTicket(@NotNull String ticketId);
 
+    /**
+     * Ermittelt ein bereits existierendes {@link Ticket} mit einer bestimmten, einzigartigen ID innerhalb von
+     * Open-Match und gibt es zurück. Falls kein {@link Ticket} mit dieser ID existiert, wird stattdessen {@code null}
+     * zurückgegeben. Das {@link Ticket} wird immer in seinem aktuell gültigen Zustand von Open Match abgefragt und kann
+     * daher auch Änderungen enthalten, die nicht durch diesen Client vorgenommen wurden.
+     *
+     * @param ticketId Die einzigartige ID des {@link Ticket Tickets}, das von Open-Match abgefragt werden soll.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem existierenden {@link Ticket}, die
+     *     abgeschlossen wird, sobald das {@link Ticket} empfangen wurde oder ein Fehler dabei auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    CompletableFuture<Ticket> getTicket(@NotNull String ticketId);
+    CompletableFuture<@Nullable Ticket> getTicket(@NotNull String ticketId);
 
+    /**
+     * Beobachtet die {@link Assignment Zuweisungen} eines {@link Ticket Tickets} mit einer bestimmten ID und
+     * registriert einen {@link Consumer Callback}, der die Änderungen an der {@link Assignment Zuweisung} verarbeitet.
+     * Der Stream wird geschlossen, sobald das {@link Ticket} innerhalb von Open Match gelöscht wird.
+     *
+     * @param ticketId Die einzigartige ID des {@link Ticket Tickets}, dessen Änderungen an der {@link Assignment
+     *                 Zuweisung} beobachtet werden sollen.
+     * @param callback Der {@link Consumer Callback}, der die empfangenen Änderungen an der {@link Assignment Zuweisung}
+     *                 des {@link Ticket Tickets} verarbeiten soll.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     void watchAssignments(@NotNull String ticketId, @NotNull Consumer<@NotNull WatchAssignmentsResponse> callback);
     //</editor-fold>
 
     //<editor-fold desc="backfill">
+
+    /**
+     * Erstellt innerhalb von Open-Match einen neuen {@link Backfill} mit den Metadaten eines bestimmten {@link
+     * TicketTemplate Templates}. Die {@link Backfill#getId() ID} und die {@link Backfill#getCreateTime()
+     * Erstellungszeit} werden von Open-Match festgelegt. Die {@link Assignment Game-Server-Zuweisung} wird anschließend
+     * durch {@link #acknowledgeBackfill(String, Assignment)} festgelegt.
+     *
+     * @param template Das {@link TicketTemplate}, dessen Metadaten für die Erstellung des {@link Backfill Backfills}
+     *                 genutzt werden sollen.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem neuen {@link Backfill}, die
+     *     abgeschlossen wird, sobald der {@link Backfill} erstellt wurde oder ein Fehler dabei auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_ -> new")
-    CompletableFuture<Backfill> createBackfill(@NotNull final TicketTemplate template);
+    CompletableFuture<@NotNull Backfill> createBackfill(@NotNull final TicketTemplate template);
 
+    /**
+     * Löscht einen bereits existierenden {@link Backfill} mit einer bestimmten, einzigartigen ID innerhalb von
+     * Open-Match. Wurde dieser {@link Backfill} bereits einem Match zugewiesen, so hat diese Operation keine
+     * Auswirkungen. Der {@link Backfill} wird jedoch augenblicklich nicht weiter für die Zuweisung berücksichtigt.
+     * Falls kein solcher {@link Backfill} existiert, bewirkt diese Methode keine Veränderung.
+     *
+     * @param backfillId Die einzigartige ID des {@link Backfill Backfills}, der innerhalb von Open-Match gelöscht
+     *                   werden soll.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft}, die abgeschlossen wird, sobald der {@link
+     *     Backfill} gelöscht wurde oder ein Fehler dabei auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_ -> new")
     CompletableFuture<Void> deleteBackfill(@NotNull String backfillId);
 
+    /**
+     * Ermittelt einen bereits existierenden {@link Backfill} mit einer bestimmten, einzigartigen ID innerhalb von
+     * Open-Match und gibt ihn zurück. Falls kein {@link Backfill} mit dieser ID existiert, wird stattdessen {@code
+     * null} zurückgegeben. Der {@link Backfill} wird immer in seinem aktuell gültigen Zustand von Open Match abgefragt
+     * und kann daher auch Änderungen enthalten, die nicht durch diesen Client vorgenommen wurden.
+     *
+     * @param backfillId Die einzigartige ID des {@link Backfill Backfills}, der von Open-Match abgefragt werden soll.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem existierenden {@link Backfill}, die
+     *     abgeschlossen wird, sobald der {@link Backfill} empfangen wurde oder ein Fehler dabei auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    CompletableFuture<Backfill> getBackfill(@NotNull String backfillId);
+    CompletableFuture<@Nullable Backfill> getBackfill(@NotNull String backfillId);
 
+    /**
+     * Aktualisiert die mit einem {@link Backfill} verbundenen Metadaten und gibt den neuen {@link Backfill} zurück. In
+     * dem übergebenen {@link Backfill} muss die {@link Backfill#getId() ID} gesetzt sein. Die Metadaten aus dem Objekt
+     * werden vollständig überschrieben und ersetzen damit die aktuellen Metadaten des {@link Backfill Backfills}.
+     * Dadurch werden alle {@link Ticket Tickets}, die auf diesen {@link Backfill} warten zurück zum aktiven Pool
+     * gegeben und stehen somit nicht länger aus.
+     *
+     * @param backfill Der {@link Backfill} mit den neuen Metadaten, die für die in Open Match vorhandene Datenstruktur
+     *                 übernommen werden sollen.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem aktualisierten {@link Backfill}, die
+     *     abgeschlossen wird, sobald der {@link Backfill} modifiziert wurde oder ein Fehler dabei auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    CompletableFuture<Backfill> updateBackfill(@NotNull Backfill backfill);
+    CompletableFuture<@Nullable Backfill> updateBackfill(@NotNull Backfill backfill);
 
+    /**
+     * Benachrichtigt Open Match zu der {@link Assignment Zuweisung} bzw. den Adressdaten des jeweiligen Game-Servers.
+     * Dadurch wird der Prozess der Zuweisung gestartet und es werden {@link Ticket Tickets} gesucht, die diesem {@link
+     * Backfill} zugewiesen werden können. Die ermittelten {@link Ticket Tickets} sind in der Rückgabe enthalten und
+     * können auf den entsprechenden Server verbunden werden.
+     *
+     * @param backfillId Die einzigartige ID des {@link Backfill Backfills}, dessen {@link Assignment Zuweisung}
+     *                   bestätigt werden soll.
+     * @param assignment Die {@link Assignment Zuweisung} des Game-Servers, die für den {@link Backfill} bestätigt
+     *                   werden soll.
+     *
+     * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit der {@link AcknowledgeBackfillResponse
+     *     Statusmeldung}, die abgeschlossen wird, sobald der {@link Backfill} zugewiesen wurde oder ein Fehler dabei
+     *     auftritt.
+     *
+     * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
+     */
     @NotNull
     @Contract(value = "_, _ -> new")
-    CompletableFuture<AcknowledgeBackfillResponse> acknowledgeBackfill(
+    CompletableFuture<@Nullable AcknowledgeBackfillResponse> acknowledgeBackfill(
         @NotNull String backfillId,
         @NotNull Assignment assignment
     );

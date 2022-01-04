@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 import org.jetbrains.annotations.VisibleForTesting;
 
@@ -193,7 +194,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public CompletableFuture<@NotNull Ticket> getTicket(@NotNull final String ticketId) {
+    public CompletableFuture<@Nullable Ticket> getTicket(@NotNull final String ticketId) {
         // check that there was actually a ticket id supplied
         Preconditions.checkNotNull(
             ticketId,
@@ -273,7 +274,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public CompletableFuture<@NotNull Backfill> getBackfill(@NotNull final String backfillId) {
+    public CompletableFuture<@Nullable Backfill> getBackfill(@NotNull final String backfillId) {
         // check that there was actually a backfill id supplied
         Preconditions.checkNotNull(
             backfillId,
