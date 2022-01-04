@@ -42,7 +42,7 @@ dependencies {
     implementation("net.javacrumbs.future-converter:future-converter-java8-guava:1.2.0")
 
     // classpaths we only compile against (are provided or unnecessary in runtime)
-    compileOnly("org.apache.logging.log4j:log4j-api:2.17.0")
+    compileOnly("org.apache.logging.log4j:log4j-api:2.17.1")
     compileOnly("org.jetbrains:annotations:23.0.0")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
