@@ -170,6 +170,36 @@ class TicketTemplateTest {
     }
 
     @Test
+    @DisplayName("Should not be equal (searchFields)")
+    void shouldNotBeEqualSearchFields() {
+        // given
+        TicketTemplate template1 = TicketTemplate.newBuilder()
+            .addStringArg("a", "banana")
+            .build();
+        TicketTemplate template2 = TicketTemplate.newBuilder()
+            .addStringArg("a", "banana2")
+            .build();
+
+        // then
+        Assertions.assertNotEquals(template1, template2);
+    }
+
+    @Test
+    @DisplayName("Should not be equal (extensions)")
+    void shouldNotBeEqualExtensions() {
+        // given
+        TicketTemplate template1 = TicketTemplate.newBuilder()
+            .addExtension("a", "banana")
+            .build();
+        TicketTemplate template2 = TicketTemplate.newBuilder()
+            .addExtension("a", "banana2")
+            .build();
+
+        // then
+        Assertions.assertNotEquals(template1, template2);
+    }
+
+    @Test
     @SuppressWarnings("java:S5785")
     @DisplayName("Should not be equal (null)")
     void shouldNotBeEqualNull() {
@@ -895,6 +925,32 @@ class TicketTemplateTest {
             Assertions.assertEquals(builder2, builder2);
             Assertions.assertEquals(builder1, builder2);
             Assertions.assertEquals(builder2, builder1);
+        }
+
+        @Test
+        @DisplayName("Should not be equal (searchFields)")
+        void shouldNotBeEqualSearchFields() {
+            // given
+            TicketTemplateBuilder builder1 = TicketTemplate.newBuilder()
+                .addStringArg("a", "banana");
+            TicketTemplateBuilder builder2 = TicketTemplate.newBuilder()
+                .addStringArg("a", "banana2");
+
+            // then
+            Assertions.assertNotEquals(builder1, builder2);
+        }
+
+        @Test
+        @DisplayName("Should not be equal (extensions)")
+        void shouldNotBeEqualExtensions() {
+            // given
+            TicketTemplateBuilder builder1 = TicketTemplate.newBuilder()
+                .addExtension("a", "banana");
+            TicketTemplateBuilder builder2 = TicketTemplate.newBuilder()
+                .addExtension("a", "banana2");
+
+            // then
+            Assertions.assertNotEquals(builder1, builder2);
         }
 
         @Test
