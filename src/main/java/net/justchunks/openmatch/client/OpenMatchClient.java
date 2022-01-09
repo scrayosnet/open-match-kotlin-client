@@ -55,6 +55,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem neuen {@link Ticket}, die abgeschlossen
      *     wird, sobald das {@link Ticket} erstellt wurde oder ein Fehler dabei auftritt.
      *
+     * @throws NullPointerException Falls für das {@link TicketTemplate Template} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
@@ -73,6 +74,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft}, die abgeschlossen wird, sobald das {@link
      *     Ticket} gelöscht wurde oder ein Fehler dabei auftritt.
      *
+     * @throws NullPointerException Falls für die ID des {@link Ticket Tickets} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
@@ -90,6 +92,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem existierenden {@link Ticket}, die
      *     abgeschlossen wird, sobald das {@link Ticket} empfangen wurde oder ein Fehler dabei auftritt.
      *
+     * @throws NullPointerException Falls für die ID des {@link Ticket Tickets} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
@@ -111,6 +114,9 @@ public interface OpenMatchClient extends AutoCloseable {
      * @param observer Der {@link StreamObserver Observer}, der die empfangenen Änderungen an der {@link Assignment
      *                 Zuweisung} des {@link Ticket Tickets} verarbeiten soll.
      *
+     * @throws NullPointerException Falls für die ID des {@link Ticket Tickets} oder den {@link StreamObserver Observer}
+     *                              {@code null} übergeben wird. Da die ganze Funktionsweise dieser Methode auf dem
+     *                              Observer basiert, ist ein Aufruf ohne Observer nicht im Sinne dieser Methode.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     void watchAssignments(
@@ -133,6 +139,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem neuen {@link Backfill}, die
      *     abgeschlossen wird, sobald der {@link Backfill} erstellt wurde oder ein Fehler dabei auftritt.
      *
+     * @throws NullPointerException Falls für das {@link TicketTemplate Template} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
@@ -151,6 +158,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft}, die abgeschlossen wird, sobald der {@link
      *     Backfill} gelöscht wurde oder ein Fehler dabei auftritt.
      *
+     * @throws NullPointerException Falls für die ID des {@link Backfill Backfills} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
@@ -168,6 +176,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem existierenden {@link Backfill}, die
      *     abgeschlossen wird, sobald der {@link Backfill} empfangen wurde oder ein Fehler dabei auftritt.
      *
+     * @throws NullPointerException Falls für die ID des {@link Backfill Backfills} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
@@ -187,6 +196,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem aktualisierten {@link Backfill}, die
      *     abgeschlossen wird, sobald der {@link Backfill} modifiziert wurde oder ein Fehler dabei auftritt.
      *
+     * @throws NullPointerException Falls für dan {@link Backfill} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
@@ -208,6 +218,8 @@ public interface OpenMatchClient extends AutoCloseable {
      *     Statusmeldung}, die abgeschlossen wird, sobald der {@link Backfill} zugewiesen wurde oder ein Fehler dabei
      *     auftritt.
      *
+     * @throws NullPointerException Falls für die ID oder die {@link Assignment Zuweisung} des {@link Backfill
+     *                              Backfills} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
