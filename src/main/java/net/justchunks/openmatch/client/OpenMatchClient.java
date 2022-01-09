@@ -200,7 +200,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
-    @Contract(value = "_ -> new", pure = true)
+    @Contract(value = "_ -> new")
     CompletableFuture<@Nullable Backfill> updateBackfill(@NotNull Backfill backfill);
 
     /**
