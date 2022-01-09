@@ -1,5 +1,7 @@
 package net.justchunks.openmatch.client;
 
+import io.grpc.Context.CancellableContext;
+import io.grpc.stub.StreamObserver;
 import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
 import openmatch.Frontend.WatchAssignmentsResponse;
@@ -45,7 +47,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * TicketTemplate Templates}. Die {@link Ticket#getId() ID} und die {@link Ticket#getCreateTime() Erstellungszeit}
      * werden von Open-Match festgelegt. Die {@link Assignment Game-Server-Zuweisung} wird von dem Director festgelegt,
      * nachdem dieses {@link Ticket} einem Match zugewiesen wurde. Der Status der {@link Assignment Zuweisung} kann über
-     * {@link #watchAssignments(String, Consumer)} beobachtet werden.
+     * {@link #watchAssignments(String, StreamObserver)} beobachtet werden.
      *
      * @param template Das {@link TicketTemplate}, dessen Metadaten für die Erstellung des {@link Ticket Tickets}
      *                 genutzt werden sollen.
@@ -95,18 +97,26 @@ public interface OpenMatchClient extends AutoCloseable {
     CompletableFuture<@Nullable Ticket> getTicket(@NotNull String ticketId);
 
     /**
-     * Beobachtet die {@link Assignment Zuweisungen} eines {@link Ticket Tickets} mit einer bestimmten ID und
-     * registriert einen {@link Consumer Callback}, der die Änderungen an der {@link Assignment Zuweisung} verarbeitet.
-     * Der Stream wird geschlossen, sobald das {@link Ticket} innerhalb von Open Match gelöscht wird.
+     * Beobachtet die {@link Assignment Zuweisungen} eines einzelnen {@link Ticket Tickets} mit einer bestimmten ID und
+     * registriert einen {@link StreamObserver Observer}, der die Änderungen an der {@link Assignment Zuweisung}
+     * verarbeitet. Der Stream wird geschlossen, sobald das {@link Ticket} innerhalb von Open Match gelöscht wird und es
+     * wird jedes Mal ein neues Element übermittelt, wenn sich die {@link Assignment Zuweisung} ändert.
+     *
+     * <p>Um den Stream schon vorher zu beenden, kann ein {@link CancellableContext beendbarer Kontext} verwendet
+     * werden, in dem dann diese Methode aufgerufen wird. Dadurch wird der Stream sauber geschlossen und an den {@link
+     * StreamObserver Observer} werden anschließend keine weiteren Elemente gesendet.
      *
      * @param ticketId Die einzigartige ID des {@link Ticket Tickets}, dessen Änderungen an der {@link Assignment
      *                 Zuweisung} beobachtet werden sollen.
-     * @param callback Der {@link Consumer Callback}, der die empfangenen Änderungen an der {@link Assignment Zuweisung}
-     *                 des {@link Ticket Tickets} verarbeiten soll.
+     * @param observer Der {@link StreamObserver Observer}, der die empfangenen Änderungen an der {@link Assignment
+     *                 Zuweisung} des {@link Ticket Tickets} verarbeiten soll.
      *
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
-    void watchAssignments(@NotNull String ticketId, @NotNull Consumer<@NotNull WatchAssignmentsResponse> callback);
+    void watchAssignments(
+        @NotNull String ticketId,
+        @NotNull StreamObserver<@NotNull WatchAssignmentsResponse> observer
+    );
     //</editor-fold>
 
     //<editor-fold desc="backfill">

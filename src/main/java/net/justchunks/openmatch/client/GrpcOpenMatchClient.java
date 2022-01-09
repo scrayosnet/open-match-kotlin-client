@@ -1,10 +1,11 @@
 package net.justchunks.openmatch.client;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import net.justchunks.openmatch.client.observer.CallbackStreamObserver;
+import io.grpc.stub.StreamObserver;
 import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillRequest;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
@@ -19,6 +20,7 @@ import openmatch.Frontend.WatchAssignmentsRequest;
 import openmatch.Frontend.WatchAssignmentsResponse;
 import openmatch.FrontendServiceGrpc;
 import openmatch.FrontendServiceGrpc.FrontendServiceFutureStub;
+import openmatch.FrontendServiceGrpc.FrontendServiceStub;
 import openmatch.Messages.Assignment;
 import openmatch.Messages.Backfill;
 import openmatch.Messages.Ticket;
@@ -33,7 +35,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import static net.javacrumbs.futureconverter.java8guava.FutureConverter.toCompletableFuture;
 
@@ -89,10 +90,16 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     //</editor-fold>
 
     //<editor-fold desc="stubs">
-    /** Der asynchrone, nebenläufige Stub für die Kommunikation mit der externen Schnittstelle von Open Match. */
+    /**
+     * Der asynchrone, nebenläufige {@link FrontendServiceStub Stub} für die Kommunikation mit der externen
+     * Schnittstelle von Open Match, der über {@link StreamObserver Stream-Observer} kontrolliert wird.
+     */
     @NotNull
-    private final FrontendServiceGrpc.FrontendServiceStub stub;
-    /** Der auf Zukünften basierende Stub für die Kommunikation mit der externen Schnittstelle von Open Match. */
+    private final FrontendServiceStub asyncStub;
+    /**
+     * Der asynchrone, nebenläufige {@link FrontendServiceFutureStub Stub} für die Kommunikation mit der externen
+     * Schnittstelle von Open Match, der über {@link ListenableFuture Futures} kontrolliert wird.
+     */
     @NotNull
     private final FrontendServiceFutureStub futureStub;
     //</editor-fold>
@@ -148,7 +155,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
             .build();
 
         // create the async and  stubs for the communication with open match
-        this.stub = FrontendServiceGrpc.newStub(channel);
+        this.asyncStub = FrontendServiceGrpc.newStub(channel);
         this.futureStub = FrontendServiceGrpc.newFutureStub(channel);
     }
     //</editor-fold>
@@ -212,7 +219,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     @Override
     public void watchAssignments(
         @NotNull final String ticketId,
-        @NotNull final Consumer<@NotNull WatchAssignmentsResponse> callback
+        @NotNull final StreamObserver<@NotNull WatchAssignmentsResponse> observer
     ) {
         // check that there was actually a ticket id supplied
         Preconditions.checkNotNull(
@@ -222,16 +229,16 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
 
         // check that there was actually a callback supplied
         Preconditions.checkNotNull(
-            callback,
-            "The supplied callback cannot be null!"
+            observer,
+            "The supplied observer cannot be null!"
         );
 
         // call the endpoint with the ticket id request and use the callback to handle responses
-        stub.watchAssignments(
+        asyncStub.watchAssignments(
             WatchAssignmentsRequest.newBuilder()
                 .setTicketId(ticketId)
                 .build(),
-            CallbackStreamObserver.getInstance(callback)
+            observer
         );
     }
 
