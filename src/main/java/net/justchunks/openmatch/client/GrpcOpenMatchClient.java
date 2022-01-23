@@ -3,9 +3,17 @@ package net.justchunks.openmatch.client;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.Channel;
+import io.grpc.Context;
+import io.grpc.Context.CancellableContext;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
+import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
+import net.justchunks.client.base.observer.RelayStreamObserver;
+import net.justchunks.client.base.observer.StreamConsumer;
+import net.justchunks.client.base.operation.CancellableOperation;
+import net.justchunks.client.base.operation.ContextCancellableOperation;
 import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillRequest;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
@@ -32,7 +40,11 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -57,7 +69,10 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
 
     //<editor-fold desc="CONSTANTS">
 
-    //<editor-fold desc="port">
+    //<editor-fold desc="host">
+    /** Der Host, über den die Kommunikation mit dem Open Match Frontend über gRPC standardmäßig stattfindet. */
+    @NotNull
+    private static final String DEFAULT_FRONTEND_HOST = "localhost";
     /** Der Schlüssel der Umgebungsvariable, aus der der Host für das Open Match Frontend ausgelesen werden kann. */
     @NotNull
     private static final String FRONTEND_HOST_ENV_KEY = "OPEN_MATCH_FRONTEND_GRPC_HOST";
@@ -201,7 +216,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public CompletableFuture<@Nullable Ticket> getTicket(@NotNull final String ticketId) {
+    public CompletableFuture<@NotNull Optional<Ticket>> getTicket(@NotNull final String ticketId) {
         // check that there was actually a ticket id supplied
         Preconditions.checkNotNull(
             ticketId,
@@ -213,13 +228,15 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
             GetTicketRequest.newBuilder()
                 .setTicketId(ticketId)
                 .build()
-        ));
+        )).handle(this::handleGetNotFound);
     }
 
+    @NotNull
     @Override
-    public void watchAssignments(
+    @Contract(value = "_, _ -> new")
+    public CancellableOperation watchAssignments(
         @NotNull final String ticketId,
-        @NotNull final StreamObserver<@NotNull WatchAssignmentsResponse> observer
+        @NotNull final StreamConsumer<@NotNull WatchAssignmentsResponse> consumer
     ) {
         // check that there was actually a ticket id supplied
         Preconditions.checkNotNull(
@@ -227,19 +244,25 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
             "The supplied ticket id cannot be null!"
         );
 
-        // check that there was actually a callback supplied
+        // check that there was actually a consumer supplied
         Preconditions.checkNotNull(
-            observer,
-            "The supplied observer cannot be null!"
+            consumer,
+            "The supplied consumer cannot be null!"
         );
 
+        // create a new context object that can be used to terminate the stream
+        final CancellableContext context = Context.current().withCancellation();
+
         // call the endpoint with the ticket id request and use the callback to handle responses
-        asyncStub.watchAssignments(
+        context.run(() -> asyncStub.watchAssignments(
             WatchAssignmentsRequest.newBuilder()
                 .setTicketId(ticketId)
                 .build(),
-            observer
-        );
+            RelayStreamObserver.getInstance(consumer, context)
+        ));
+
+        // return the wrapped cancellable context
+        return new ContextCancellableOperation(context);
     }
 
     @NotNull
@@ -281,19 +304,20 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public CompletableFuture<@Nullable Backfill> getBackfill(@NotNull final String backfillId) {
+    public CompletableFuture<@NotNull Optional<Backfill>> getBackfill(@NotNull final String backfillId) {
         // check that there was actually a backfill id supplied
         Preconditions.checkNotNull(
             backfillId,
             "The supplied backfill id cannot be null!"
         );
 
+
         // call the endpoint with a new request and relay the future of the response
         return toCompletableFuture(futureStub.getBackfill(
             GetBackfillRequest.newBuilder()
                 .setBackfillId(backfillId)
                 .build()
-        ));
+        )).handle(this::handleGetNotFound);
     }
 
     @NotNull
@@ -311,7 +335,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
             UpdateBackfillRequest.newBuilder()
                 .setBackfill(backfill)
                 .build()
-        ));
+        )).handle(this::handleBackfillReferenceNotFound);
     }
 
     @NotNull
@@ -339,7 +363,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
                 .setBackfillId(backfillId)
                 .setAssignment(assignment)
                 .build()
-        ));
+        )).handle(this::handleBackfillReferenceNotFound);
     }
     //</editor-fold>
 
@@ -348,9 +372,14 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     public void close() {
         try {
             // shutdown and wait for it to complete
-            channel
+            final boolean finishedShutdown = channel
                 .shutdown()
                 .awaitTermination(SHUTDOWN_GRACE_PERIOD.toMillis(), TimeUnit.MILLISECONDS);
+
+            // force shutdown if it did not terminate
+            if (!finishedShutdown) {
+                channel.shutdownNow();
+            }
         } catch (final InterruptedException ex) {
             // log so we know the origin/reason for this interruption
             LOG.debug("Thread was interrupted while waiting for the shutdown of a GrpcOpenMatchClient.", ex);
@@ -364,9 +393,9 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
     //<editor-fold desc="utility: connection resolution">
     /**
      * Ermittelt automatisch den Host für die Verbindung zum gRPC-Server der externen Schnittstelle des Open Match
-     * Frontends. Dabei wird versucht den Host über die Umgebungsvariable {@value FRONTEND_HOST_ENV_KEY} aufzulösen. Ist
-     * diese Variable nicht gesetzt, wird stattdessen eine {@link IllegalStateException} ausgelöst, da der Host so nicht
-     * ermittelt werden kann.
+     * Frontends. Dabei wird zunächst versucht den Host über die Umgebungsvariable {@value FRONTEND_HOST_ENV_KEY}
+     * aufzulösen. Ist diese Variable nicht gesetzt, wird zum Standard-Host für die gRPC-Schnittstelle im Open Match
+     * Frontend ({@value DEFAULT_FRONTEND_HOST}) zurückgefallen.
      *
      * @return Der automatisch ermittelte Host für die Verbindung zum gRPC-Server der externen Schnittstelle des Open
      *     Match Frontends.
@@ -379,16 +408,7 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
         final String host = System.getenv(FRONTEND_HOST_ENV_KEY);
 
         // check that there was any value and that it is valid
-        if (host != null) {
-            // return the host that was found in the environment variable
-            return host;
-        }
-
-        // throw an exception, because we cannot recover in this case
-        throw new IllegalStateException(
-            "The environment variable " + FRONTEND_HOST_ENV_KEY + " was missing. Therefore, the client cannot be "
-            + "instantiated."
-        );
+        return Objects.requireNonNullElse(host, DEFAULT_FRONTEND_HOST);
     }
 
     /**
@@ -421,6 +441,79 @@ public final class GrpcOpenMatchClient implements OpenMatchClient {
                 );
             }
         }
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="utility: conversion">
+    /**
+     * Verarbeitet die Rückgabe einer {@link CompletableFuture Future} und konvertiert dabei den Fehler {@link
+     * Code#NOT_FOUND} in einen leeren {@link Optional}. Andere Fehler werden einfach wieder erneut geworfen und so
+     * weitergegeben. Durch die Konvertierung des Fehlers können wir leichter mit nicht vorhandenen {@link E Elementen}
+     * umgehen und müssen nicht jedes Mal eine komplette Fehlerbehandlung durchführen.
+     *
+     * @param result    Das vorliegende {@link E Element}, falls bei der Abfrage kein Fehler aufgetreten ist.
+     * @param exception Der vorliegende {@link Throwable Fehler}, falls bei der Abfrage ein Fehler aufgetreten ist.
+     * @param <E>       Der generische Typ des {@link E Elements}, das zurückgegeben werden soll, falls es gefunden
+     *                  werden konnte.
+     *
+     * @return Das ermittelte {@link E Element} oder ein leerer {@link Optional}, falls innerhalb von Open Match kein
+     *     Element mit dieser ID gefunden werden konnte.
+     */
+    @NotNull
+    @Contract(value = "_, _ -> new", pure = true)
+    private <E> Optional<E> handleGetNotFound(@Nullable final E result, @Nullable final Throwable exception) {
+        if (exception != null) {
+            // get the status from the triggered exception
+            final Status state = Status.fromThrowable(exception);
+
+            // if the backfill is not found, convert the value
+            if (state.getCode().equals(Code.NOT_FOUND)) {
+                return Optional.empty();
+            }
+
+            // in any other case, rethrow the original exception
+            throw new CompletionException(exception);
+        }
+
+        // convert the result if there was no exception
+        return Optional.ofNullable(result);
+    }
+
+    /**
+     * Verarbeitet die Rückgabe einer {@link CompletableFuture Future} und konvertiert dabei den Fehler {@link
+     * Code#NOT_FOUND} in eine {@link NoSuchElementException}. Andere Fehler werden einfach wieder erneut geworfen und
+     * so weitergegeben. Durch die Konvertierung des Fehlers können wir diesen Zustand in den nutzenden Plattformen
+     * besser erwarten und müssen dort nicht die gRPC-Abhängigkeit einfügen.
+     *
+     * @param result    Das vorliegende {@link E Element}, falls bei der Abfrage kein Fehler aufgetreten ist.
+     * @param exception Der vorliegende {@link Throwable Fehler}, falls bei der Abfrage ein Fehler aufgetreten ist.
+     * @param <E>       Der generische Typ des {@link E Elements}, das zurückgegeben werden soll, falls es gefunden
+     *                  werden konnte.
+     *
+     * @return Das ermittelte {@link E Element}. Falls kein Element gefunden werden konnte, wird stattdessen eine {@link
+     *     NoSuchElementException} ausgelöst.
+     */
+    @NotNull
+    @Contract(value = "_, _ -> new", pure = true)
+    private <E> E handleBackfillReferenceNotFound(@Nullable final E result, @Nullable final Throwable exception) {
+        if (exception != null) {
+            // get the status from the triggered exception
+            final Status state = Status.fromThrowable(exception);
+
+            // if the backfill is not found, convert the value
+            if (state.getCode().equals(Code.NOT_FOUND)) {
+                throw new NoSuchElementException("No backfill with was found for the supplied id!");
+            }
+
+            // in any other case, rethrow the original exception
+            throw new CompletionException(exception);
+        }
+
+        // we can assert that it is set, if there was no exception
+        assert result != null : "There was no exception, so the value must be present!";
+
+        // return the result as-is if there was no exception
+        return result;
     }
     //</editor-fold>
 }

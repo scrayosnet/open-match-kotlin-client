@@ -1,7 +1,7 @@
 package net.justchunks.openmatch.client;
 
-import io.grpc.Context.CancellableContext;
-import io.grpc.stub.StreamObserver;
+import net.justchunks.client.base.observer.StreamConsumer;
+import net.justchunks.client.base.operation.CancellableOperation;
 import net.justchunks.openmatch.client.wrapper.TicketTemplate;
 import openmatch.Frontend.AcknowledgeBackfillResponse;
 import openmatch.Frontend.WatchAssignmentsResponse;
@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -47,7 +49,7 @@ public interface OpenMatchClient extends AutoCloseable {
      * TicketTemplate Templates}. Die {@link Ticket#getId() ID} und die {@link Ticket#getCreateTime() Erstellungszeit}
      * werden von Open-Match festgelegt. Die {@link Assignment Game-Server-Zuweisung} wird von dem Director festgelegt,
      * nachdem dieses {@link Ticket} einem Match zugewiesen wurde. Der Status der {@link Assignment Zuweisung} kann über
-     * {@link #watchAssignments(String, StreamObserver)} beobachtet werden.
+     * {@link #watchAssignments(String, StreamConsumer)} beobachtet werden.
      *
      * @param template Das {@link TicketTemplate}, dessen Metadaten für die Erstellung des {@link Ticket Tickets}
      *                 genutzt werden sollen.
@@ -83,45 +85,61 @@ public interface OpenMatchClient extends AutoCloseable {
 
     /**
      * Ermittelt ein bereits existierendes {@link Ticket} mit einer bestimmten, einzigartigen ID innerhalb von
-     * Open-Match und gibt es zurück. Falls kein {@link Ticket} mit dieser ID existiert, wird stattdessen {@code null}
-     * zurückgegeben. Das {@link Ticket} wird immer in seinem aktuell gültigen Zustand von Open Match abgefragt und kann
-     * daher auch Änderungen enthalten, die nicht durch diesen Client vorgenommen wurden.
+     * Open-Match und gibt es zurück. Falls kein {@link Ticket} mit dieser ID existiert, wird stattdessen ein leerer
+     * {@link Optional} zurückgegeben. Das {@link Ticket} wird immer in seinem aktuell gültigen Zustand von Open Match
+     * abgefragt und kann daher auch Änderungen enthalten, die nicht durch diesen Client vorgenommen wurden.
      *
      * @param ticketId Die einzigartige ID des {@link Ticket Tickets}, das von Open-Match abgefragt werden soll.
      *
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem existierenden {@link Ticket}, die
-     *     abgeschlossen wird, sobald das {@link Ticket} empfangen wurde oder ein Fehler dabei auftritt.
+     *     abgeschlossen wird, sobald das {@link Ticket} empfangen wurde oder ein Fehler dabei auftritt. Falls kein
+     *     solches {@link Ticket} existiert wird in der {@link CompletableFuture Future} ein leerer {@link Optional}
+     *     zurückgegeben.
      *
      * @throws NullPointerException Falls für die ID des {@link Ticket Tickets} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    CompletableFuture<@Nullable Ticket> getTicket(@NotNull String ticketId);
+    CompletableFuture<@NotNull Optional<Ticket>> getTicket(@NotNull String ticketId);
 
     /**
      * Beobachtet die {@link Assignment Zuweisungen} eines einzelnen {@link Ticket Tickets} mit einer bestimmten ID und
-     * registriert einen {@link StreamObserver Observer}, der die Änderungen an der {@link Assignment Zuweisung}
+     * registriert einen {@link StreamConsumer Consumer}, der die Änderungen an der {@link Assignment Zuweisung}
      * verarbeitet. Der Stream wird geschlossen, sobald das {@link Ticket} innerhalb von Open Match gelöscht wird und es
      * wird jedes Mal ein neues Element übermittelt, wenn sich die {@link Assignment Zuweisung} ändert.
      *
-     * <p>Um den Stream schon vorher zu beenden, kann ein {@link CancellableContext beendbarer Kontext} verwendet
-     * werden, in dem dann diese Methode aufgerufen wird. Dadurch wird der Stream sauber geschlossen und an den {@link
-     * StreamObserver Observer} werden anschließend keine weiteren Elemente gesendet.
+     * <p>Der {@link StreamConsumer Consumer} wird asynchron ausgelöst, aber {@link StreamConsumer#onNext(Object)} wird
+     * immer nur für ein Element gleichzeitig ausgelöst. Die Implementation muss also nicht threadsicher sein.
+     *
+     * <p>Um den Stream zu beenden, kann entweder die zurückgegebene {@link CancellableOperation Operation} {@link
+     * CancellableOperation#cancel() abgeschlossen} werden oder in der {@link StreamConsumer#onNext(Object)} Methode des
+     * {@link StreamConsumer Consumers} wird {@code false} zurückgegeben. Dadurch wird der Stream sauber geschlossen und
+     * an den {@link StreamConsumer Consumer} werden anschließend keine weiteren Elemente gesendet.
+     *
+     * <p>Da der Stream (falls er nicht vorher beendet wird) endlos weiterläuft, kann er das {@link #close()
+     * Herunterfahren} des SDKs verzögern und sollte entsprechend zuvor beendet werden. Damit nicht der maximale Timeout
+     * abgewartet werden muss, sollten alle Streams zuvor geschlossen werden. Sollten noch offene Streams existieren,
+     * wird {@link StreamConsumer#onError(Throwable)} ausgelöst und der Stream beendet.
      *
      * @param ticketId Die einzigartige ID des {@link Ticket Tickets}, dessen Änderungen an der {@link Assignment
      *                 Zuweisung} beobachtet werden sollen.
-     * @param observer Der {@link StreamObserver Observer}, der die empfangenen Änderungen an der {@link Assignment
+     * @param consumer Der {@link StreamConsumer Consumer}, der die empfangenen Änderungen an der {@link Assignment
      *                 Zuweisung} des {@link Ticket Tickets} verarbeiten soll.
      *
-     * @throws NullPointerException Falls für die ID des {@link Ticket Tickets} oder den {@link StreamObserver Observer}
+     * @return Eine {@link CancellableOperation unterbrechbare Operation}, die {@link CancellableOperation#cancel()
+     *     abgebrochen} werden kann, um damit aufzuhören weitere Nachrichten zu empfangen.
+     *
+     * @throws NullPointerException Falls für die ID des {@link Ticket Tickets} oder den {@link StreamConsumer Consumer}
      *                              {@code null} übergeben wird. Da die ganze Funktionsweise dieser Methode auf dem
      *                              Observer basiert, ist ein Aufruf ohne Observer nicht im Sinne dieser Methode.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
-    void watchAssignments(
+    @NotNull
+    @Contract(value = "_, _ -> new")
+    CancellableOperation watchAssignments(
         @NotNull String ticketId,
-        @NotNull StreamObserver<@NotNull WatchAssignmentsResponse> observer
+        @NotNull StreamConsumer<@NotNull WatchAssignmentsResponse> consumer
     );
     //</editor-fold>
 
@@ -167,28 +185,31 @@ public interface OpenMatchClient extends AutoCloseable {
 
     /**
      * Ermittelt einen bereits existierenden {@link Backfill} mit einer bestimmten, einzigartigen ID innerhalb von
-     * Open-Match und gibt ihn zurück. Falls kein {@link Backfill} mit dieser ID existiert, wird stattdessen {@code
-     * null} zurückgegeben. Der {@link Backfill} wird immer in seinem aktuell gültigen Zustand von Open Match abgefragt
-     * und kann daher auch Änderungen enthalten, die nicht durch diesen Client vorgenommen wurden.
+     * Open-Match und gibt ihn zurück. Falls kein {@link Backfill} mit dieser ID existiert, wird stattdessen ein leerer
+     * {@link Optional} zurückgegeben. Der {@link Backfill} wird immer in seinem aktuell gültigen Zustand von Open Match
+     * abgefragt und kann daher auch Änderungen enthalten, die nicht durch diesen Client vorgenommen wurden.
      *
      * @param backfillId Die einzigartige ID des {@link Backfill Backfills}, der von Open-Match abgefragt werden soll.
      *
      * @return Eine {@link CompletableFuture vervollständigbare Zukunft} mit dem existierenden {@link Backfill}, die
-     *     abgeschlossen wird, sobald der {@link Backfill} empfangen wurde oder ein Fehler dabei auftritt.
+     *     abgeschlossen wird, sobald der {@link Backfill} empfangen wurde oder ein Fehler dabei auftritt. Falls kein
+     *     solcher {@link Backfill} existiert wird in der {@link CompletableFuture Future} ein leerer {@link Optional}
+     *     zurückgegeben.
      *
      * @throws NullPointerException Falls für die ID des {@link Backfill Backfills} {@code null} übergeben wird.
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Dokumentation</a>
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    CompletableFuture<@Nullable Backfill> getBackfill(@NotNull String backfillId);
+    CompletableFuture<@NotNull Optional<Backfill>> getBackfill(@NotNull String backfillId);
 
     /**
      * Aktualisiert die mit einem {@link Backfill} verbundenen Metadaten und gibt den neuen {@link Backfill} zurück. In
      * dem übergebenen {@link Backfill} muss die {@link Backfill#getId() ID} gesetzt sein. Die Metadaten aus dem Objekt
-     * werden vollständig überschrieben und ersetzen damit die aktuellen Metadaten des {@link Backfill Backfills}.
-     * Dadurch werden alle {@link Ticket Tickets}, die auf diesen {@link Backfill} warten zurück zum aktiven Pool
-     * gegeben und stehen somit nicht länger aus.
+     * werden vollständig überschrieben und ersetzen damit die aktuellen Metadaten des {@link Backfill Backfills}. Die
+     * {@link Backfill#getCreateTime() Erstellungszeit} wird nicht aktualisiert, die {@link Backfill#getGeneration()
+     * Generation} wird inkrementiert. Dadurch werden alle {@link Ticket Tickets}, die auf diesen {@link Backfill}
+     * warten zurück zum aktiven Pool gegeben und stehen somit nicht länger aus.
      *
      * @param backfill Der {@link Backfill} mit den neuen Metadaten, die für die in Open Match vorhandene Datenstruktur
      *                 übernommen werden sollen.
@@ -207,7 +228,8 @@ public interface OpenMatchClient extends AutoCloseable {
      * Benachrichtigt Open Match zu der {@link Assignment Zuweisung} bzw. den Adressdaten des jeweiligen Game-Servers.
      * Dadurch wird der Prozess der Zuweisung gestartet und es werden {@link Ticket Tickets} gesucht, die diesem {@link
      * Backfill} zugewiesen werden können. Die ermittelten {@link Ticket Tickets} sind in der Rückgabe enthalten und
-     * können auf den entsprechenden Server verbunden werden.
+     * können auf den entsprechenden Server verbunden werden. Wenn der entsprechende {@link Backfill} nicht existiert,
+     * wird in der {@link CompletableFuture Future} eine {@link NoSuchElementException} ausgelöst.
      *
      * @param backfillId Die einzigartige ID des {@link Backfill Backfills}, dessen {@link Assignment Zuweisung}
      *                   bestätigt werden soll.

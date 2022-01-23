@@ -1,0 +1,75 @@
+logging:
+    level: debug
+    format: text
+    rpc: true
+
+backoff:
+    initialInterval: 100ms
+    maxInterval: 500ms
+    multiplier: 1.5
+    randFactor: 0.5
+    maxElapsedTime: 3000ms
+
+api:
+    backend:
+        hostname: "open-match-backend"
+        grpcport: "50505"
+        httpport: "51505"
+    frontend:
+        hostname: "open-match-frontend"
+        grpcport: "50504"
+        httpport: "51504"
+    query:
+        hostname: "open-match-query"
+        grpcport: "50503"
+        httpport: "51503"
+    evaluator:
+        hostname: "open-match-evaluator"
+        grpcport: "50508"
+        httpport: "51508"
+    synchronizer:
+        hostname: "open-match-synchronizer"
+        grpcport: "50506"
+        httpport: "51506"
+    swaggerui:
+        hostname: "open-match-swaggerui"
+        httpport: "51500"
+    test:
+        hostname: "open-match-test"
+        grpcport: "50509"
+        httpport: "51509"
+    scale:
+        httpport: "51509"
+
+redis:
+    hostname: redis
+    port: 6379
+    user:
+    usePassword: false
+    passwordPath: /opt/bitnami/redis/secrets/redis-password
+    pool:
+        maxIdle: 200
+        maxActive: 0
+        idleTimeout: 0
+        healthCheckTimeout: 300ms
+
+telemetry:
+    reportingPeriod: "10m"
+    traceSamplingFraction: "1"
+    zpages:
+        enable: "false"
+    jaeger:
+        enable: "false"
+    prometheus:
+        enable: "false"
+    stackdriverMetrics:
+        enable: "false"
+
+# https://github.com/googleforgames/open-match/issues/1247#issuecomment-688771760
+# backfillLockTimeout and assignedDeleteTimeout are necessary so that unit tests can run
+assignedDeleteTimeout: 60000ms
+backfillLockTimeout: 60000ms
+pendingReleaseTimeout: 60000ms
+registrationInterval: 250ms
+proposalCollectionInterval: 20000ms
+queryPageSize: 10000
