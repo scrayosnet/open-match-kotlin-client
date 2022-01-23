@@ -8,7 +8,7 @@ val mavenRepositoryToken: String by project
 
 // provide general GAV coordinates
 group = "net.justchunks"
-version = "2.0.2-SNAPSHOT"
+version = "3.0.0"
 description = "Open Match Java Client"
 
 // define the grpc versions for the build
