@@ -66,7 +66,7 @@ class GrpcOpenMatchClientTest {
 
     @Container
     private GenericContainer<?> redisContainer = new GenericContainer<>(
-        DockerImageName.parse("docker.io/bitnami/redis:6.0.9-debian-10-r66")
+        DockerImageName.parse("docker.io/bitnami/redis:7.0.5")
     )
         .withEnv("ALLOW_EMPTY_PASSWORD", "yes")
         .withEnv("REDIS_PORT", "6379")
@@ -76,7 +76,7 @@ class GrpcOpenMatchClientTest {
         .withNetwork(SHARED_NETWORK);
     @Container
     private GenericContainer<?> frontendContainer = new GenericContainer<>(
-        DockerImageName.parse("gcr.io/open-match-public-images/openmatch-frontend:1.3.0")
+        DockerImageName.parse("gcr.io/open-match-public-images/openmatch-frontend:1.5.0")
     )
         .withClasspathResourceMapping(
             "matchmaker_config_default.yaml",
@@ -622,9 +622,9 @@ class GrpcOpenMatchClientTest {
         Assertions.assertNotNull(updatedBackfill);
         // should not be equal because of the generation
         Assertions.assertNotEquals(newBackfill, updatedBackfill);
-        Assertions.assertEquals(1, originalBackfill.getGeneration());
-        Assertions.assertEquals(1, newBackfill.getGeneration());
-        Assertions.assertEquals(2, updatedBackfill.getGeneration());
+        Assertions.assertEquals(0, originalBackfill.getGeneration());
+        Assertions.assertEquals(0, newBackfill.getGeneration());
+        Assertions.assertEquals(1, updatedBackfill.getGeneration());
         Assertions.assertEquals(originalBackfill.getId(), updatedBackfill.getId());
         Assertions.assertEquals(originalBackfill.getCreateTime(), updatedBackfill.getCreateTime());
         Assertions.assertNotNull(updatedFields);

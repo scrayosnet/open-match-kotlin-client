@@ -22,11 +22,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Ein {@link TicketTemplate} ist eine Vorlage für die Erstellung von neuen {@link Ticket Tickets} und {@link Backfill
- * Backfills}. Das {@link TicketTemplate Template} enthält dabei nur die Metadaten, die für die Erstellung neuer {@link
- * Ticket Tickets} und {@link Backfill Backfills} benötigt (und berücksichtigt) werden und verwaltet daher zum Beispiel
- * nicht die ID. Ein {@link TicketTemplate} kann verwendet werden, um unlimitiert viele neue Objekte zu erstellen. Für
- * die Erstellung wird ein {@link TicketTemplateBuilder Builder} verwendet.
+ * Ein {@link TicketTemplate} ist eine Vorlage für die Erstellung von neuen {@link Ticket Tickets} und
+ * {@link Backfill Backfills}. Das {@link TicketTemplate Template} enthält dabei nur die Metadaten, die für die
+ * Erstellung neuer {@link Ticket Tickets} und {@link Backfill Backfills} benötigt (und berücksichtigt) werden und
+ * verwaltet daher zum Beispiel nicht die ID. Ein {@link TicketTemplate} kann verwendet werden, um unlimitiert viele
+ * neue Objekte zu erstellen. Für die Erstellung wird ein {@link TicketTemplateBuilder Builder} verwendet.
  */
 @SuppressWarnings("ClassCanBeRecord")
 public final class TicketTemplate {
@@ -43,10 +43,11 @@ public final class TicketTemplate {
 
     //<editor-fold desc="CONSTRUCTORS">
     /**
-     * Erstellt ein neues {@link TicketTemplate Template} für die Generierung von {@link Ticket Tickets} und {@link
-     * Backfill Backfills} mit festen, unveränderlichen Metadaten. Die Metadaten werden bei der Erstellung kopiert und
-     * sind so vollständig gegenüber externen Veränderungen geschützt. Mehrere {@link TicketTemplate Templates}, die mit
-     * denselben Metadaten erstellt werden, haben also dennoch unabhängige Metadaten-Referenzen.
+     * Erstellt ein neues {@link TicketTemplate Template} für die Generierung von {@link Ticket Tickets} und
+     * {@link Backfill Backfills} mit festen, unveränderlichen Metadaten. Die Metadaten werden bei der Erstellung
+     * kopiert und sind so vollständig gegenüber externen Veränderungen geschützt. Mehrere
+     * {@link TicketTemplate Templates}, die mit denselben Metadaten erstellt werden, haben also dennoch unabhängige
+     * Metadaten-Referenzen.
      *
      * @param searchFields Die indexierten Metadaten, die für das {@link Ticket} oder den {@link Backfill} gesetzt
      *                     werden.
@@ -165,8 +166,8 @@ public final class TicketTemplate {
      * @param preset Das bereits existierende {@link TicketTemplate Template}, dessen Attribute als Ausgangswerte für
      *               den neuen {@link TicketTemplateBuilder Builder} genutzt werden sollen.
      *
-     * @return Ein neuer {@link TicketTemplateBuilder Builder}, der mit dem Werten des übergebenen {@link TicketTemplate
-     *     Templates} initialisiert wurde.
+     * @return Ein neuer {@link TicketTemplateBuilder Builder}, der mit dem Werten des übergebenen
+     *     {@link TicketTemplate Templates} initialisiert wurde.
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
@@ -180,9 +181,10 @@ public final class TicketTemplate {
      * Ein {@link TicketTemplateBuilder} erlaubt die verkettete Erstellung von {@link TicketTemplate Templates}. Ein
      * {@link TicketTemplateBuilder Builder} kann über {@link TicketTemplate#newBuilder()} bezogen werden und optional
      * (über {@link TicketTemplate#newBuilder(TicketTemplate)}) auch schon mit Standardwerten initialisiert werden. Der
-     * {@link TicketTemplateBuilder Builder} kann anschließend verwendet werden um beliebig viele {@link TicketTemplate
-     * Templates} zu erstellen und es können auch nach der Erstellung eines {@link TicketTemplate Templates} weiterhin
-     * Änderungen vorgenommen werden, die sich aber nur auf neue {@link TicketTemplate Templates} auswirken werden.
+     * {@link TicketTemplateBuilder Builder} kann anschließend verwendet werden um beliebig viele
+     * {@link TicketTemplate Templates} zu erstellen und es können auch nach der Erstellung eines
+     * {@link TicketTemplate Templates} weiterhin Änderungen vorgenommen werden, die sich aber nur auf neue
+     * {@link TicketTemplate Templates} auswirken werden.
      */
     @SuppressWarnings("UnusedReturnValue")
     public static final class TicketTemplateBuilder {
@@ -234,16 +236,16 @@ public final class TicketTemplate {
 
         //<editor-fold desc="search fields">
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} ein neues String-Argument für die {@link SearchFields
-         * Suchfelder} hinzu. Diese Felder werden indexiert und können genutzt werden, um innerhalb von Open Match
-         * Filterungen vorzunehmen. Die bereits gesetzten String-Felder können über diese Methode bei gleichem Schlüssel
-         * überschrieben werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem
-         * gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} ein neues String-Argument für die
+         * {@link SearchFields Suchfelder} hinzu. Diese Felder werden indexiert und können genutzt werden, um innerhalb
+         * von Open Match Filterungen vorzunehmen. Die bereits gesetzten String-Felder können über diese Methode bei
+         * gleichem Schlüssel überschrieben werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere
+         * Schlüssel mit dem gleichen Namen existieren können.
          *
-         * @param key   Der Schlüssel des neuen String-Arguments, das den {@link SearchFields Suchfeldern} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen String-Arguments, das den {@link SearchFields Suchfeldern} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param key   Der Schlüssel des neuen String-Arguments, das den {@link SearchFields Suchfeldern} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen String-Arguments, das den {@link SearchFields Suchfeldern} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -257,16 +259,16 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} ein neues Double-Argument für die {@link SearchFields
-         * Suchfelder} hinzu. Diese Felder werden indexiert und können genutzt werden, um innerhalb von Open Match
-         * Filterungen vorzunehmen. Die bereits gesetzten Double-Felder können über diese Methode bei gleichem Schlüssel
-         * überschrieben werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem
-         * gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} ein neues Double-Argument für die
+         * {@link SearchFields Suchfelder} hinzu. Diese Felder werden indexiert und können genutzt werden, um innerhalb
+         * von Open Match Filterungen vorzunehmen. Die bereits gesetzten Double-Felder können über diese Methode bei
+         * gleichem Schlüssel überschrieben werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere
+         * Schlüssel mit dem gleichen Namen existieren können.
          *
-         * @param key   Der Schlüssel des neuen Double-Arguments, das den {@link SearchFields Suchfeldern} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Double-Arguments, das den {@link SearchFields Suchfeldern} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param key   Der Schlüssel des neuen Double-Arguments, das den {@link SearchFields Suchfeldern} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Double-Arguments, das den {@link SearchFields Suchfeldern} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -302,17 +304,18 @@ public final class TicketTemplate {
 
         //<editor-fold desc="extensions">
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -326,17 +329,18 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -350,17 +354,18 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -374,17 +379,18 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -398,17 +404,18 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -422,17 +429,18 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -446,17 +454,18 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -470,17 +479,18 @@ public final class TicketTemplate {
         }
 
         /**
-         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die {@link #extensions
-         * Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht genutzt werden, um
-         * innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die Matchmaking-Funktion zur Verfügung
-         * und können daher trotzdem für die Zusammenstellung der Matches verwendet werden. Die bereits gesetzen
-         * Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben werden. Die Groß- und
-         * Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen existieren können.
+         * Fügt dem {@link TicketTemplateBuilder Builder} einen neuen Metadaten-Satz für die
+         * {@link #extensions Erweiterungen} hinzu. Diese Felder werden nicht indexiert und können daher auch nicht
+         * genutzt werden, um innerhalb von Open Match Filterungen vorzunehmen. Sie stehen aber für die
+         * Matchmaking-Funktion zur Verfügung und können daher trotzdem für die Zusammenstellung der Matches verwendet
+         * werden. Die bereits gesetzen Erweiterungen können über diese Methode bei gleichem Schlüssel überschrieben
+         * werden. Die Groß- und Kleinschreibung wird berücksichtigt, wodurch mehrere Schlüssel mit dem gleichen Namen
+         * existieren können.
          *
          * @param key   Der Schlüssel des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
          *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
-         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses {@link
-         *              TicketTemplateBuilder Builders} hinzugefügt werden soll.
+         * @param value Der Wert des neuen Metadaten-Satzes, der den {@link #extensions Erweiterungen} dieses
+         *              {@link TicketTemplateBuilder Builders} hinzugefügt werden soll.
          *
          * @return Die Instanz dieses {@link TicketTemplateBuilder Builders}, um verkettete Aufrufe zu unterstützen.
          */
@@ -497,10 +507,10 @@ public final class TicketTemplate {
         //<editor-fold desc="creation">
         /**
          * Erstellt ein neues, unveränderbares {@link TicketTemplate Template} mit den Eigenschaften, die in diesem
-         * {@link TicketTemplateBuilder Builder} konfiguriert wurden. Anschließende Änderungen an diesem {@link
-         * TicketTemplateBuilder Builder} wirken sich nicht länger auf die zurückgegebene Instanz aus. Es können
-         * beliebig viele, autarke Instanzen über diese Methode konstruiert werden, ohne das dieser {@link
-         * TicketTemplateBuilder Builder} dadurch ungültig wird.
+         * {@link TicketTemplateBuilder Builder} konfiguriert wurden. Anschließende Änderungen an diesem
+         * {@link TicketTemplateBuilder Builder} wirken sich nicht länger auf die zurückgegebene Instanz aus. Es können
+         * beliebig viele, autarke Instanzen über diese Methode konstruiert werden, ohne das dieser
+         * {@link TicketTemplateBuilder Builder} dadurch ungültig wird.
          *
          * @return Ein neues, unveränderbares {@link TicketTemplate Template} mit den Eigenschaften, die in diesem
          *     {@link TicketTemplateBuilder Builder} konfiguriert wurden.
