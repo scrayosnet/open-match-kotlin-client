@@ -23,7 +23,7 @@ val coroutinesVersion: String by project
 
 // provide general GAV coordinates
 group = "net.justchunks"
-version = "4.0.0-SNAPSHOT"
+version = "4.0.0"
 description = "Open Match Java/Kotlin Client"
 
 // hook the plugins for the builds
