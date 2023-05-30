@@ -144,7 +144,7 @@ publishing {
     // define the repositories that shall be used for publishing
     repositories {
         maven {
-            url = uri("https://gitlab.dev.scrayos.net/api/v4/projects/118/packages/maven")
+            url = uri("https://gitlab.scrayos.net/api/v4/projects/118/packages/maven")
             credentials(HttpHeaderCredentials::class) {
                 name = mavenRepositoryTokenType
                 value = mavenRepositoryToken
