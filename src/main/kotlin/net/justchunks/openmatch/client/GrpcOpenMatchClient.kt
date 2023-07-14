@@ -213,7 +213,7 @@ class GrpcOpenMatchClient internal constructor(
         private const val DEFAULT_FRONTEND_HOST: String = "localhost"
 
         /** The key of the environment variable, that can be used to retrieve the assigned gRPC host of the frontend. */
-        private const val FRONTEND_HOST_ENV_KEY = "OPEN_MATCH_FRONTEND_GRPC_PORT"
+        private const val FRONTEND_HOST_ENV_KEY = "OPEN_MATCH_FRONTEND_GRPC_HOST"
 
         /** The default port, that will be used to communicate with the gRPC server of the Open Match frontend. */
         private const val DEFAULT_FRONTEND_PORT: Int = 50504
@@ -234,10 +234,10 @@ class GrpcOpenMatchClient internal constructor(
         val FRONTEND_HOST: String
             get() {
                 // read the environment variable for the dynamic open match host
-                val textPort = System.getenv(FRONTEND_HOST_ENV_KEY)
+                val host = System.getenv(FRONTEND_HOST_ENV_KEY)
 
                 // check that there was any value and that it is valid and fall back to default
-                return textPort ?: DEFAULT_FRONTEND_HOST
+                return host ?: DEFAULT_FRONTEND_HOST
             }
 
         /**

@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 // define variables that get supplied through gradle.properties
 val mavenRepositoryTokenType: String by project
 val mavenRepositoryToken: String by project
-val kotlinVersion: String by project
+val dokkaVersion: String by project
 val protobufVersion: String by project
 val grpcVersion: String by project
 val grpcKotlinVersion: String by project
@@ -20,6 +20,7 @@ val mockkVersion: String by project
 val pitestEngineVersion: String by project
 val pitestJunitVersion: String by project
 val coroutinesVersion: String by project
+val junitVersion: String by project
 
 // provide general GAV coordinates
 group = "net.justchunks"
@@ -31,7 +32,7 @@ plugins {
     `java-library`
     `maven-publish`
     idea
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.9.0"
     id("org.jetbrains.kotlinx.kover") version "0.6.1"
     id("org.jetbrains.dokka") version "1.8.10"
     id("org.sonarqube") version "4.0.0.2929"
@@ -73,7 +74,7 @@ dependencies {
     testImplementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
 
     // integrate the dokka html export plugin
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:$kotlinVersion")
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:$dokkaVersion")
 }
 
 // configure the java extension (versions + jars)
@@ -87,6 +88,15 @@ java {
     // also generate javadoc and sources
     withSourcesJar()
     withJavadocJar()
+}
+
+// configure the kotlin extension
+kotlin {
+    // set the toolchain version that is required to build this project
+    // replaces sourceCompatibility and targetCompatibility as it also sets these implicitly
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 // configure the protobuf extension (protoc + grpc)
@@ -134,7 +144,7 @@ protobuf {
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
-            useJUnitJupiter("5.9.2")
+            useJUnitJupiter(junitVersion)
         }
     }
 }

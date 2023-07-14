@@ -35,7 +35,6 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 
-@Disabled("Integration tests are currently not possible")
 @Testcontainers
 internal class GrpcOpenMatchClientTest {
 
@@ -77,8 +76,8 @@ internal class GrpcOpenMatchClientTest {
     @BeforeEach
     fun beforeEach() {
         client = GrpcOpenMatchClient(
-            frontendContainer.host,
-            frontendContainer.getMappedPort(GRPC_PORT)
+            "localhost",
+            21212
         )
     }
 
