@@ -24,7 +24,7 @@ val junitVersion: String by project
 
 // provide general GAV coordinates
 group = "net.justchunks"
-version = "4.0.1-SNAPSHOT"
+version = "4.0.1"
 description = "Open Match Java/Kotlin Client"
 
 // hook the plugins for the builds
