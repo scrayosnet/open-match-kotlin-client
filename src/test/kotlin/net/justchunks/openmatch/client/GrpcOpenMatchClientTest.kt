@@ -6,14 +6,6 @@ import com.google.protobuf.StringValue
 import com.google.protobuf.Timestamp
 import io.grpc.Status
 import io.grpc.StatusException
-import kotlin.NoSuchElementException
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.take
@@ -34,6 +26,14 @@ import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
+import kotlin.NoSuchElementException
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @Disabled("Integration tests are currently not possible")
 @Testcontainers
@@ -41,7 +41,7 @@ internal class GrpcOpenMatchClientTest {
 
     @Container
     private val redisContainer: GenericContainer<*> = GenericContainer(
-        DockerImageName.parse("docker.io/bitnami/redis:7.0.11")
+        DockerImageName.parse("docker.io/bitnami/redis:7.0.15"),
     )
         .withEnv("ALLOW_EMPTY_PASSWORD", "yes")
         .withEnv("REDIS_PORT", "6379")
@@ -52,17 +52,17 @@ internal class GrpcOpenMatchClientTest {
 
     @Container
     private val frontendContainer: GenericContainer<*> = GenericContainer(
-        DockerImageName.parse("gcr.io/open-match-public-images/openmatch-frontend:1.7.0")
+        DockerImageName.parse("gcr.io/open-match-public-images/openmatch-frontend:1.8.1"),
     )
         .withClasspathResourceMapping(
             "matchmaker_config_default.yaml",
             "/app/config/default/matchmaker_config_default.yaml",
-            BindMode.READ_ONLY
+            BindMode.READ_ONLY,
         )
         .withClasspathResourceMapping(
             "matchmaker_config_override.yaml",
             "/app/config/override/matchmaker_config_override.yaml",
-            BindMode.READ_ONLY
+            BindMode.READ_ONLY,
         )
         .withNetwork(SHARED_NETWORK)
         .withExposedPorts(GRPC_PORT, HTTP_PORT)
@@ -70,7 +70,7 @@ internal class GrpcOpenMatchClientTest {
             Wait
                 .forHttp("/")
                 .forPort(HTTP_PORT)
-                .forStatusCode(404)
+                .forStatusCode(404),
         )
     private lateinit var client: GrpcOpenMatchClient
 
@@ -78,7 +78,7 @@ internal class GrpcOpenMatchClientTest {
     fun beforeEach() {
         client = GrpcOpenMatchClient(
             frontendContainer.host,
-            frontendContainer.getMappedPort(GRPC_PORT)
+            frontendContainer.getMappedPort(GRPC_PORT),
         )
     }
 
@@ -93,7 +93,7 @@ internal class GrpcOpenMatchClientTest {
         // when
         val ticket = client.createTicket(
             TicketTemplate.newBuilder()
-                .build()
+                .build(),
         )
 
         // then
@@ -116,7 +116,7 @@ internal class GrpcOpenMatchClientTest {
                 .addDoubleArg("test2", 1.5)
                 .addTag("test3")
                 .addExtension("test4", "test")
-                .build()
+                .build(),
         )
 
         // then
@@ -131,8 +131,8 @@ internal class GrpcOpenMatchClientTest {
         assertEquals(
             "test",
             ticket.extensionsMap["test4"]!!.unpack(
-                StringValue::class.java
-            ).value
+                StringValue::class.java,
+            ).value,
         )
         assertEquals(ticket, client.getTicket(ticket.id))
     }
@@ -297,7 +297,7 @@ internal class GrpcOpenMatchClientTest {
         // when
         val backfill = client.createBackfill(
             TicketTemplate.newBuilder()
-                .build()
+                .build(),
         )
 
         // then
@@ -319,7 +319,7 @@ internal class GrpcOpenMatchClientTest {
                 .addDoubleArg("test2", 1.5)
                 .addTag("test3")
                 .addExtension("test4", "test")
-                .build()
+                .build(),
         )
 
         // then
@@ -334,8 +334,8 @@ internal class GrpcOpenMatchClientTest {
         assertEquals(
             "test",
             backfill.extensionsMap["test4"]!!.unpack(
-                StringValue::class.java
-            ).value
+                StringValue::class.java,
+            ).value,
         )
         assertEquals(backfill, client.getBackfill(backfill.id))
     }
@@ -441,7 +441,7 @@ internal class GrpcOpenMatchClientTest {
                 .addTag("test3b")
                 .addExtension("test4a", "test")
                 .addExtension("test4b", "test")
-                .build()
+                .build(),
         )
         val newBackfill = originalBackfill.toBuilder()
             .setSearchFields(
@@ -453,7 +453,7 @@ internal class GrpcOpenMatchClientTest {
                     .clearTags()
                     .addTags("test3b")
                     .addTags("other3")
-                    .build()
+                    .build(),
             )
             .putExtensions("test4a", Any.pack(StringValue.of("other")))
             .putExtensions("other4", Any.pack(StringValue.of("other")))
@@ -489,20 +489,20 @@ internal class GrpcOpenMatchClientTest {
         assertEquals(
             "test",
             updatedExtensions["test4b"]!!.unpack(
-                StringValue::class.java
-            ).value
+                StringValue::class.java,
+            ).value,
         )
         assertEquals(
             "other",
             updatedExtensions["test4a"]!!.unpack(
-                StringValue::class.java
-            ).value
+                StringValue::class.java,
+            ).value,
         )
         assertEquals(
             "other",
             updatedExtensions["other4"]!!.unpack(
-                StringValue::class.java
-            ).value
+                StringValue::class.java,
+            ).value,
         )
         val returnedBackfill = client.getBackfill(originalBackfill.id)
         assertEquals(updatedBackfill, returnedBackfill)
@@ -516,7 +516,7 @@ internal class GrpcOpenMatchClientTest {
             client.updateBackfill(
                 Backfill.newBuilder()
                     .setId("non-existing")
-                    .build()
+                    .build(),
             )
         }
     }
@@ -529,7 +529,7 @@ internal class GrpcOpenMatchClientTest {
             client.updateBackfill(
                 TicketTemplate.newBuilder()
                     .build()
-                    .createNewBackfill()
+                    .createNewBackfill(),
             )
         }
         assertEquals(Status.INVALID_ARGUMENT.code, exception.status.code)
@@ -542,18 +542,18 @@ internal class GrpcOpenMatchClientTest {
         // when
         val backfill = client.createBackfill(
             TicketTemplate.newBuilder()
-                .build()
+                .build(),
         )
         val updatedBackfill = client.updateBackfill(
             backfill.toBuilder()
                 .clearCreateTime()
-                .build()
+                .build(),
         )
 
         // then
         assertEquals(
             backfill.createTime.seconds,
-            updatedBackfill.createTime.seconds
+            updatedBackfill.createTime.seconds,
         )
     }
 
@@ -563,22 +563,22 @@ internal class GrpcOpenMatchClientTest {
         // when
         val backfill = client.createBackfill(
             TicketTemplate.newBuilder()
-                .build()
+                .build(),
         )
         val updatedBackfill = client.updateBackfill(
             backfill.toBuilder()
                 .setCreateTime(
                     Timestamp.newBuilder()
                         .setSeconds(backfill.createTime.seconds + 1)
-                        .build()
+                        .build(),
                 )
-                .build()
+                .build(),
         )
 
         // then
         assertEquals(
             backfill.createTime.seconds,
-            updatedBackfill.createTime.seconds
+            updatedBackfill.createTime.seconds,
         )
     }
 
@@ -588,7 +588,7 @@ internal class GrpcOpenMatchClientTest {
         // given
         val backfill: Backfill = client.createBackfill(
             TicketTemplate.newBuilder()
-                .build()
+                .build(),
         )
         val assignment = Messages.Assignment.newBuilder()
             .setConnection("test")
@@ -597,7 +597,7 @@ internal class GrpcOpenMatchClientTest {
         // when
         val response = client.acknowledgeBackfill(
             backfill.id,
-            assignment
+            assignment,
         )
 
         // when, then
@@ -612,22 +612,22 @@ internal class GrpcOpenMatchClientTest {
         client.createTicket(
             TicketTemplate.newBuilder()
                 .addStringArg("key", "value")
-                .build()
+                .build(),
         )
         client.createTicket(
             TicketTemplate.newBuilder()
                 .addStringArg("key", "value")
-                .build()
+                .build(),
         )
         client.createTicket(
             TicketTemplate.newBuilder()
                 .addStringArg("key", "wrong")
-                .build()
+                .build(),
         )
         val backfill: Backfill = client.createBackfill(
             TicketTemplate.newBuilder()
                 .addStringArg("key", "value")
-                .build()
+                .build(),
         )
         val assignment = Messages.Assignment.newBuilder()
             .setConnection("test")
@@ -636,7 +636,7 @@ internal class GrpcOpenMatchClientTest {
         // when
         val response = client.acknowledgeBackfill(
             backfill.id,
-            assignment
+            assignment,
         )
 
         // when, then
@@ -656,7 +656,7 @@ internal class GrpcOpenMatchClientTest {
         assertFailsWith<NoSuchElementException> {
             client.acknowledgeBackfill(
                 "non-existing",
-                assignment
+                assignment,
             )
         }
     }

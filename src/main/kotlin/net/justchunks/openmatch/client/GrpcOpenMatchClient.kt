@@ -5,9 +5,6 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.Status
 import io.grpc.StatusException
-import java.time.Duration
-import java.util.NoSuchElementException
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.Flow
 import net.justchunks.openmatch.client.GrpcOpenMatchClient.Companion.FRONTEND_HOST_ENV_KEY
 import net.justchunks.openmatch.client.GrpcOpenMatchClient.Companion.FRONTEND_PORT_ENV_KEY
@@ -23,11 +20,14 @@ import openmatch.Frontend.GetBackfillRequest
 import openmatch.Frontend.UpdateBackfillRequest
 import openmatch.Frontend.WatchAssignmentsRequest
 import openmatch.Frontend.WatchAssignmentsResponse
-import openmatch.FrontendServiceGrpcKt.FrontendServiceCoroutineStub as FrontendStub
 import openmatch.Messages.Assignment
 import openmatch.Messages.Backfill
 import openmatch.Messages.Ticket
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.util.NoSuchElementException
+import java.util.concurrent.TimeUnit
+import openmatch.FrontendServiceGrpcKt.FrontendServiceCoroutineStub as FrontendStub
 
 /**
  * A [GrpcOpenMatchClient] represents the gRPC implementation of the [Open Match frontend][OpenMatchClient]. The
@@ -51,7 +51,7 @@ class GrpcOpenMatchClient internal constructor(
     /** The host of the external interface of the Open Match frontend, that will be used to establish the connection. */
     val host: String = FRONTEND_HOST,
     /** The port of the external interface of the Open Match frontend, that will be used to establish the connection. */
-    val port: Int = FRONTEND_PORT
+    val port: Int = FRONTEND_PORT,
 ) : OpenMatchClient {
 
     /** The [channel][ManagedChannel], that will be used for the network communication with the external interface. */
@@ -68,7 +68,7 @@ class GrpcOpenMatchClient internal constructor(
         return stub.createTicket(
             CreateTicketRequest.newBuilder()
                 .setTicket(template.createNewTicket())
-                .build()
+                .build(),
         )
     }
 
@@ -77,7 +77,7 @@ class GrpcOpenMatchClient internal constructor(
         stub.deleteTicket(
             DeleteTicketRequest.newBuilder()
                 .setTicketId(ticketId)
-                .build()
+                .build(),
         )
     }
 
@@ -87,7 +87,7 @@ class GrpcOpenMatchClient internal constructor(
             return stub.getTicket(
                 Frontend.GetTicketRequest.newBuilder()
                     .setTicketId(ticketId)
-                    .build()
+                    .build(),
             )
         } catch (ex: StatusException) {
             // if there is no ticket for this identifier, just return null
@@ -105,7 +105,7 @@ class GrpcOpenMatchClient internal constructor(
         return stub.watchAssignments(
             WatchAssignmentsRequest.newBuilder()
                 .setTicketId(ticketId)
-                .build()
+                .build(),
         )
     }
 
@@ -114,7 +114,7 @@ class GrpcOpenMatchClient internal constructor(
         return stub.createBackfill(
             CreateBackfillRequest.newBuilder()
                 .setBackfill(template.createNewBackfill())
-                .build()
+                .build(),
         )
     }
 
@@ -123,7 +123,7 @@ class GrpcOpenMatchClient internal constructor(
         stub.deleteBackfill(
             DeleteBackfillRequest.newBuilder()
                 .setBackfillId(backfillId)
-                .build()
+                .build(),
         )
     }
 
@@ -133,7 +133,7 @@ class GrpcOpenMatchClient internal constructor(
             return stub.getBackfill(
                 GetBackfillRequest.newBuilder()
                     .setBackfillId(backfillId)
-                    .build()
+                    .build(),
             )
         } catch (ex: StatusException) {
             // if there is no ticket for this identifier, just return null
@@ -152,7 +152,7 @@ class GrpcOpenMatchClient internal constructor(
             return stub.updateBackfill(
                 UpdateBackfillRequest.newBuilder()
                     .setBackfill(backfill)
-                    .build()
+                    .build(),
             )
         } catch (ex: StatusException) {
             // if the backfill is not found, convert the value
@@ -172,7 +172,7 @@ class GrpcOpenMatchClient internal constructor(
                 AcknowledgeBackfillRequest.newBuilder()
                     .setBackfillId(backfillId)
                     .setAssignment(assignment)
-                    .build()
+                    .build(),
             )
         } catch (ex: StatusException) {
             // if the backfill is not found, convert the value
@@ -207,7 +207,7 @@ class GrpcOpenMatchClient internal constructor(
 
     companion object {
         /** The logger that will be utilized to perform any logging for the methods of this class. */
-        private val LOG = LogManager.getLogger(GrpcOpenMatchClient::class.java)
+        private val LOG = LoggerFactory.getLogger(GrpcOpenMatchClient::class.java)
 
         /** The default host, that will be used to communicate with the gRPC server of the Open Match frontend. */
         private const val DEFAULT_FRONTEND_HOST: String = "localhost"
@@ -262,7 +262,7 @@ class GrpcOpenMatchClient internal constructor(
                         textPort.toInt()
                     } catch (ex: NumberFormatException) {
                         throw IllegalArgumentException(
-                            "The supplied environment variable for the port did not contain a valid number."
+                            "The supplied environment variable for the port did not contain a valid number.",
                         )
                     }
                 }

@@ -1,30 +1,11 @@
-@file:Suppress("UNUSED_VARIABLE", "UnstableApiUsage")
+@file:Suppress("UnstableApiUsage")
 
 import com.google.protobuf.gradle.id
-import java.util.Locale
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-// define variables that get supplied through gradle.properties
-val mavenRepositoryTokenType: String by project
-val mavenRepositoryToken: String by project
-val dokkaVersion: String by project
-val protobufVersion: String by project
-val grpcVersion: String by project
-val grpcKotlinVersion: String by project
-val log4jVersion: String by project
-val jetbrainsAnnotationsVersion: String by project
-val javaxAnnotationsVersion: String by project
-val jsonSimpleVersion: String by project
-val testContainersVersion: String by project
-val mockkVersion: String by project
-val pitestEngineVersion: String by project
-val pitestJunitVersion: String by project
-val coroutinesVersion: String by project
-val junitVersion: String by project
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 // provide general GAV coordinates
 group = "net.justchunks"
-version = "4.0.2-SNAPSHOT"
+version = "5.0.0-SNAPSHOT"
 description = "Open Match Java/Kotlin Client"
 
 // hook the plugins for the builds
@@ -32,13 +13,13 @@ plugins {
     `java-library`
     `maven-publish`
     idea
-    kotlin("jvm") version "1.9.0"
-    id("org.jetbrains.kotlinx.kover") version "0.6.1"
-    id("org.jetbrains.dokka") version "1.8.10"
-    id("org.sonarqube") version "4.0.0.2929"
-    id("info.solidsoft.pitest") version "1.9.11"
-    id("org.jlleitschuh.gradle.ktlint") version "11.3.1"
-    id("com.google.protobuf") version "0.9.3"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.kover)
+    alias(libs.plugins.mavenPublish)
+    alias(libs.plugins.protobuf)
+    alias(libs.plugins.sonarqube)
+    alias(libs.plugins.ktlint)
 }
 
 // configure the repositories for the dependencies
@@ -49,54 +30,33 @@ repositories {
 
 // declare all dependencies (for compilation and runtime)
 dependencies {
-    // add protobuf-java as a global api dependency (because of the generated messages)
-    api("com.google.protobuf:protobuf-kotlin:$protobufVersion")
-
-    // add coroutines core (for flow and other techniques)
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    // add protobuf as api for now for the models
+    api(libs.protobuf.kotlin)
 
     // add gRPC dependencies that are necessary for compilation and execution
-    implementation("io.grpc:grpc-protobuf:$grpcVersion")
-    implementation("io.grpc:grpc-kotlin-stub:$grpcKotlinVersion")
-    runtimeOnly("io.grpc:grpc-netty:$grpcVersion")
+    implementation(libs.bundles.grpc)
 
-    // classpaths we only compile against (are provided or unnecessary in runtime)
-    compileOnly("org.apache.logging.log4j:log4j-api:$log4jVersion")
+    // add coroutines for our coroutine based communication
+    implementation(libs.kotlin.coroutines.core)
 
-    // testing resources (are present during compilation and runtime [shaded])
-    testImplementation(kotlin("test"))
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-    testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
-    testImplementation("org.testcontainers:junit-jupiter:$testContainersVersion")
-    testImplementation("com.googlecode.json-simple:json-simple:$jsonSimpleVersion")
-    testImplementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-    testImplementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
+    // compile against the slf4j API for logging
+    compileOnly(libs.slf4j)
 
-    // integrate the dokka html export plugin
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:$dokkaVersion")
-}
-
-// configure the java extension (versions + jars)
-java {
-    // set the toolchain version that is required to build this project
-    // replaces sourceCompatibility and targetCompatibility as it also sets these implicitly
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-
-    // also generate javadoc and sources
-    withSourcesJar()
-    withJavadocJar()
+    // specify test dependencies
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.bundles.kotest)
+    testImplementation(libs.bundles.testcontainers)
+    testImplementation(libs.mockk)
+    testImplementation(libs.bundles.log4j)
+    testRuntimeOnly(libs.grpc.netty)
 }
 
 // configure the kotlin extension
 kotlin {
     // set the toolchain version that is required to build this project
     // replaces sourceCompatibility and targetCompatibility as it also sets these implicitly
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
+    // https://kotlinlang.org/docs/gradle-configure-project.html#gradle-java-toolchains-support
+    jvmToolchain(21)
 }
 
 // configure the protobuf extension (protoc + grpc)
@@ -104,7 +64,7 @@ protobuf {
     // configure the protobuf compiler for the proto compilation
     protoc {
         // set the artifact for protoc (the compiler version to use)
-        artifact = "com.google.protobuf:protoc:$protobufVersion"
+        artifact = libs.protoc.core.get().toString()
     }
 
     // configure the plugins for the protobuf build process
@@ -112,12 +72,11 @@ protobuf {
         // add a new "grpc" plugin for the java stub generation
         id("grpc") {
             // set the artifact for protobuf code generation (stubs)
-            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+            artifact = libs.protoc.genJava.get().toString()
         }
-
-        // add a new "grpckt" plugin for the protobuf build process
+        // add a new "grpckt" plugin for the kotlin stub generation
         id("grpckt") {
-            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk8@jar"
+            artifact = libs.protoc.genKotlin.get().toString() + ":jdk8@jar"
         }
     }
 
@@ -144,7 +103,7 @@ protobuf {
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
-            useJUnitJupiter(junitVersion)
+            useJUnitJupiter(libs.versions.junit)
         }
     }
 }
@@ -153,39 +112,30 @@ testing {
 publishing {
     // define the repositories that shall be used for publishing
     repositories {
-        maven {
-            url = uri("https://gitlab.scrayos.net/api/v4/projects/118/packages/maven")
-            credentials(HttpHeaderCredentials::class) {
-                name = mavenRepositoryTokenType
-                value = mavenRepositoryToken
-            }
-            authentication {
-                create<HttpHeaderAuthentication>("header")
-            }
-        }
-    }
-
-    // define the java components as publications for the repository
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
+        maven("https://gitlab.scrayos.net/api/v4/projects/118/packages/maven") {
+            name = "scrayosnet"
+            credentials(PasswordCredentials::class)
         }
     }
 }
 
-// configure pitest plugin
-pitest {
-    pitestVersion.set(pitestEngineVersion)
-    junit5PluginVersion.set(pitestJunitVersion)
+// configure ktlint
+ktlint {
+    // explicitly use a recent ktlint version for latest checks
+    version = libs.versions.ktlint
 
-    threads.set(8)
-    enableDefaultIncrementalAnalysis.set(true)
+    // exclude any generated files
+    filter {
+        // exclude generated protobuf files
+        exclude { element -> element.file.path.contains("/generated/") }
+    }
 
-    outputFormats.addAll("XML", "HTML")
-    timestampedReports.set(false)
-
-    mainSourceSets.add(sourceSets.main)
-    testSourceSets.add(sourceSets.test)
+    // configure the reporting to use checkstyle syntax
+    reporters {
+        reporter(ReporterType.PLAIN)
+        reporter(ReporterType.CHECKSTYLE)
+        reporter(ReporterType.SARIF)
+    }
 }
 
 // configure sonarqube plugin
@@ -195,30 +145,18 @@ sonarqube {
         property("sonar.projectVersion", version)
         property("sonar.projectDescription", description!!)
         property("sonar.pitest.mode", "reuseReport")
-        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/kover/xml/report.xml")
-    }
-}
-
-// configure ktlint plugin
-ktlint {
-    filter {
-        // exclude generated protobuf files
-        exclude { element -> element.file.path.contains("/generated/") }
+        property(
+            "sonar.kotlin.ktlint.reportPaths",
+            "build/reports/ktlint/ktlintKotlinScriptCheck/ktlintKotlinScriptCheck.xml," +
+                "build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.xml," +
+                "build/reports/ktlint/ktlintTestSourceSetCheck/ktlintTestSourceSetCheck.xml",
+        )
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/kover/report.xml")
     }
 }
 
 // configure tasks
 tasks {
-    withType<JavaCompile> {
-        options.compilerArgs.add("-Xlint:all")
-        options.compilerArgs.add("-Xlint:-processing")
-        options.encoding = "UTF-8"
-    }
-
-    // this is necessary so that intelliJ does not reset the version
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
 
     jar {
         // exclude the proto files as we won't need them in downstream projects
@@ -231,43 +169,9 @@ tasks {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
-    // register a new task to fetch the version for the release script
-    register("getVersion") {
-        doLast {
-            println(version)
-        }
-    }
-
-    // register a new task to print the coverage for gitlab
-    register("koverReportPrint") {
-        // invoke the report task first
-        val koverReport = named("koverXmlReport")
-        dependsOn(koverReport)
-
-        // now print the calculated coverage
-        doLast {
-            //language=RegExp
-            val regexp = """<counter type="INSTRUCTION" missed="(\d+)" covered="(\d+)"/>""".toRegex()
-            koverReport.get().outputs.files.forEach { file ->
-                // Read file by lines
-                file.useLines { lines ->
-                    // Last line in file that matches regexp is the total coverage
-                    lines.last(regexp::containsMatchIn).let { line ->
-                        // Found the match
-                        regexp.find(line)?.let {
-                            val missed = it.groupValues[1].toDouble()
-                            val covered = it.groupValues[2].toDouble()
-                            val coverage = String.format(
-                                Locale.US,
-                                "%.2f",
-                                covered * 100 / (missed + covered)
-                            )
-
-                            println("Total Code Coverage: $coverage%")
-                        }
-                    }
-                }
-            }
-        }
+    javadoc {
+        // exclude the generated protobuf files
+        exclude("agones/dev/sdk/**")
+        exclude("grpc/gateway/protoc_gen_openapiv2/**")
     }
 }
