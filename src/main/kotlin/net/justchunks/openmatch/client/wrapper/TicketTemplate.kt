@@ -11,12 +11,12 @@ import com.google.protobuf.Int64Value
 import com.google.protobuf.StringValue
 import com.google.protobuf.UInt32Value
 import com.google.protobuf.UInt64Value
-import java.util.Objects
-import java.util.UUID
 import openmatch.Messages.Backfill
 import openmatch.Messages.SearchFields
 import openmatch.Messages.Ticket
 import org.jetbrains.annotations.Contract
+import java.util.Objects
+import java.util.UUID
 
 /**
  * A [TicketTemplate] is a preset for the creation of new [tickets][Ticket] and [backfills][Backfill]. The template
@@ -31,7 +31,7 @@ class TicketTemplate private constructor(
     /** The indexed metadata, that will be assigned for the [Ticket] or [Backfill] on creation. */
     private val searchFields: SearchFields,
     /** The non-indexed metadata, that will be assigned for the [Ticket] or [Backfill] on creation. */
-    private val extensions: Map<String, Any>
+    private val extensions: Map<String, Any>,
 ) {
 
     /**
@@ -105,7 +105,7 @@ class TicketTemplate private constructor(
         /** The indexed metadata, that will be assigned for the [Ticket] or [Backfill] on creation. */
         private val searchFields: SearchFields.Builder = SearchFields.newBuilder(),
         /** The non-indexed metadata, that will be assigned for the [Ticket] or [Backfill] on creation. */
-        private val extensions: MutableMap<String, Any> = mutableMapOf()
+        private val extensions: MutableMap<String, Any> = mutableMapOf(),
     ) {
 
         /**
@@ -317,7 +317,7 @@ class TicketTemplate private constructor(
         fun newBuilder(preset: TicketTemplate): Builder {
             return Builder(
                 SearchFields.newBuilder(preset.searchFields),
-                preset.extensions.toMutableMap()
+                preset.extensions.toMutableMap(),
             )
         }
     }

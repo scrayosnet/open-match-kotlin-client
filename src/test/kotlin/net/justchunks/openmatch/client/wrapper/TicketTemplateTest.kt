@@ -11,6 +11,15 @@ import com.google.protobuf.Int64Value
 import com.google.protobuf.StringValue
 import com.google.protobuf.UInt32Value
 import com.google.protobuf.UInt64Value
+import net.justchunks.openmatch.client.wrapper.TicketTemplate.Builder
+import net.justchunks.openmatch.client.wrapper.TicketTemplate.Companion.newBuilder
+import openmatch.Messages.Backfill
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.UUID
 import kotlin.Array
 import kotlin.Boolean
@@ -29,15 +38,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import net.justchunks.openmatch.client.wrapper.TicketTemplate.Builder
-import net.justchunks.openmatch.client.wrapper.TicketTemplate.Companion.newBuilder
-import openmatch.Messages.Backfill
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 
 internal class TicketTemplateTest {
 
@@ -788,8 +788,8 @@ internal class TicketTemplateTest {
             strings = [
                 "94be7616-cf3b-4dc8-8e13-a30fdfd90ac1",
                 "8bee6ec0-87d5-424e-8d4c-cfe6acd4fd11",
-                "f33cde18-152a-44b8-aadc-040d5b736844"
-            ]
+                "f33cde18-152a-44b8-aadc-040d5b736844",
+            ],
         )
         @DisplayName("Should add UUID extension (extensions)")
         fun shouldAddUuidExtension(rawValue: String?) {
@@ -805,7 +805,7 @@ internal class TicketTemplateTest {
             // then
             assertEquals(
                 Any.pack(StringValue.of(value.toString())),
-                ticket.getExtensionsOrDefault("a", null)
+                ticket.getExtensionsOrDefault("a", null),
             )
         }
 
@@ -867,7 +867,7 @@ internal class TicketTemplateTest {
             // then
             assertEquals(
                 Any.pack(BytesValue.of(ByteString.copyFrom(value))),
-                ticket.getExtensionsOrDefault("a", null)
+                ticket.getExtensionsOrDefault("a", null),
             )
         }
 
@@ -1163,7 +1163,7 @@ internal class TicketTemplateTest {
             return arrayOf(
                 byteArrayOf(2.toByte(), 3.toByte(), 5.toByte()),
                 byteArrayOf((-2).toByte(), 2.toByte(), (-4).toByte()),
-                byteArrayOf(127.toByte(), (-0).toByte(), (-128).toByte())
+                byteArrayOf(127.toByte(), (-0).toByte(), (-128).toByte()),
             )
         }
     }
