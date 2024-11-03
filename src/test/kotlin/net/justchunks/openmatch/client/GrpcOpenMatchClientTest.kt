@@ -41,12 +41,8 @@ internal class GrpcOpenMatchClientTest {
 
     @Container
     private val redisContainer: GenericContainer<*> = GenericContainer(
-        DockerImageName.parse("docker.io/bitnami/redis:7.0.15"),
+        DockerImageName.parse("docker.io/redis:7"),
     )
-        .withEnv("ALLOW_EMPTY_PASSWORD", "yes")
-        .withEnv("REDIS_PORT", "6379")
-        .withEnv("REDIS_REPLICATION_MODE", "master")
-        .withEnv("REDIS_TLS_ENABLED", "no")
         .withNetworkAliases("redis")
         .withNetwork(SHARED_NETWORK)
 
