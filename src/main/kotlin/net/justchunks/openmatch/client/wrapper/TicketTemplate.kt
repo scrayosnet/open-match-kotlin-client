@@ -42,12 +42,10 @@ class TicketTemplate private constructor(
      *
      * @return A new [Ticket] with the properties defined in this [TicketTemplate] for creation.
      */
-    fun createNewTicket(): Ticket {
-        return Ticket.newBuilder()
-            .setSearchFields(searchFields)
-            .putAllExtensions(extensions)
-            .build()
-    }
+    fun createNewTicket(): Ticket = Ticket.newBuilder()
+        .setSearchFields(searchFields)
+        .putAllExtensions(extensions)
+        .build()
 
     /**
      * Creates a new [Backfill] with the properties defined in this [TicketTemplate] for creation. The identifier and
@@ -57,12 +55,10 @@ class TicketTemplate private constructor(
      *
      * @return A new [Backfill] with the properties defined in this [TicketTemplate] for creation.
      */
-    fun createNewBackfill(): Backfill {
-        return Backfill.newBuilder()
-            .setSearchFields(searchFields)
-            .putAllExtensions(extensions)
-            .build()
-    }
+    fun createNewBackfill(): Backfill = Backfill.newBuilder()
+        .setSearchFields(searchFields)
+        .putAllExtensions(extensions)
+        .build()
 
     override fun equals(other: kotlin.Any?): Boolean {
         // if they are the same reference, they must be equal
@@ -80,19 +76,15 @@ class TicketTemplate private constructor(
         return searchFields == template.searchFields && extensions == template.extensions
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(searchFields, extensions)
-    }
+    override fun hashCode(): Int = Objects.hash(searchFields, extensions)
 
     @Contract(value = " -> new", pure = true)
-    override fun toString(): String {
-        return (
-            "TicketTemplate{" +
-                "searchFields=" + searchFields +
-                ", extensions=" + extensions +
-                '}'
-            )
-    }
+    override fun toString(): String = (
+        "TicketTemplate{" +
+            "searchFields=" + searchFields +
+            ", extensions=" + extensions +
+            '}'
+        )
 
     /**
      * A [Builder] represents a mutable builder instance for the chained creation of [TicketTemplate] instances. An
@@ -115,9 +107,7 @@ class TicketTemplate private constructor(
          *
          * @return A new immutable [TicketTemplate] with the properties configured in this [builder][Builder].
          */
-        fun build(): TicketTemplate {
-            return TicketTemplate(searchFields.build(), extensions.toMap())
-        }
+        fun build(): TicketTemplate = TicketTemplate(searchFields.build(), extensions.toMap())
 
         /**
          * Sets a specific [key] for the string arguments in the [searchFields] of the [builder][Builder] to a specific
@@ -274,18 +264,14 @@ class TicketTemplate private constructor(
             return searchFields.build() == builder.searchFields.build() && extensions == builder.extensions
         }
 
-        override fun hashCode(): Int {
-            return Objects.hash(searchFields.build(), extensions)
-        }
+        override fun hashCode(): Int = Objects.hash(searchFields.build(), extensions)
 
-        override fun toString(): String {
-            return (
-                "TicketTemplate.Builder{" +
-                    "searchFields=" + searchFields.build() +
-                    ", extensions=" + extensions +
-                    '}'
-                )
-        }
+        override fun toString(): String = (
+            "TicketTemplate.Builder{" +
+                "searchFields=" + searchFields.build() +
+                ", extensions=" + extensions +
+                '}'
+            )
     }
 
     companion object {
@@ -298,9 +284,7 @@ class TicketTemplate private constructor(
          * @return A new [TicketTemplateBuilder][Builder] initialized with empty default values.
          */
         @JvmStatic
-        fun newBuilder(): Builder {
-            return Builder()
-        }
+        fun newBuilder(): Builder = Builder()
 
         /**
          * Creates a new [TicketTemplateBuilder][Builder] and initializes it with the values of a specific existing
@@ -314,11 +298,9 @@ class TicketTemplate private constructor(
          * @return A new [TicketTemplateBuilder][Builder] initialized with the values of the provided [TicketTemplate].
          */
         @JvmStatic
-        fun newBuilder(preset: TicketTemplate): Builder {
-            return Builder(
-                SearchFields.newBuilder(preset.searchFields),
-                preset.extensions.toMutableMap(),
-            )
-        }
+        fun newBuilder(preset: TicketTemplate): Builder = Builder(
+            SearchFields.newBuilder(preset.searchFields),
+            preset.extensions.toMutableMap(),
+        )
     }
 }

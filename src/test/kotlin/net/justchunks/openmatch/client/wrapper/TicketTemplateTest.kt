@@ -1159,12 +1159,10 @@ internal class TicketTemplateTest {
     companion object {
 
         @JvmStatic
-        fun testBytes(): Array<ByteArray> {
-            return arrayOf(
-                byteArrayOf(2.toByte(), 3.toByte(), 5.toByte()),
-                byteArrayOf((-2).toByte(), 2.toByte(), (-4).toByte()),
-                byteArrayOf(127.toByte(), (-0).toByte(), (-128).toByte()),
-            )
-        }
+        fun testBytes(): Array<ByteArray> = arrayOf(
+            byteArrayOf(2.toByte(), 3.toByte(), 5.toByte()),
+            byteArrayOf((-2).toByte(), 2.toByte(), (-4).toByte()),
+            byteArrayOf(127.toByte(), (-0).toByte(), (-128).toByte()),
+        )
     }
 }
