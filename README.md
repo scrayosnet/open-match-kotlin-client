@@ -22,7 +22,7 @@ mappings every time that there is an API change.
 
 ## Major Features
 
-* **Idiomatic Kotlin API**: – Fully embraces Kotlin's language features while remaining Java-compatible.
+* **Idiomatic Kotlin API** – Fully embraces Kotlin's language features while remaining Java-compatible.
 * **Simple Client Bootstrap** – Just initialize
   `GrpcOpenMatchClient()` — host/port via environment variables, no extra config needed.
 * **Ticket Management** – Create, fetch, delete, and stream ticket updates via the Open Match Frontend.
@@ -88,8 +88,7 @@ client.deleteTicket("ticket-id")
 OpenMatchClient client = new GrpcOpenMatchClient();
 
 // any request can be performed on the client while it is open
-client.
-deleteTicket("ticket-id");
+client.deleteTicket("ticket-id");
 ```
 
 ## Reporting Security Issues
