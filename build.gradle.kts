@@ -7,7 +7,7 @@ import java.net.URI
 
 // provide general GAV coordinates
 group = "net.justchunks"
-version = "5.1.0"
+version = "5.1.1"
 description = "Open Match Java/Kotlin Client"
 
 // hook the plugins for the builds
@@ -115,7 +115,7 @@ mavenPublishing {
 
     // configure mandatory metadata for Maven Central
     pom {
-        name.set("Open Match Client")
+        name.set("Open Match Kotlin Client")
         description.set("An Open Match Client for Kotlin/Java.")
         inceptionYear.set("2025")
         url.set("https://github.com/scrayosnet/open-match-kotlin-client/")
