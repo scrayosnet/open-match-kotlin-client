@@ -1,7 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.google.protobuf.gradle.id
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import java.net.URI
 
 // provide general GAV coordinates
 group = "net.justchunks"
@@ -51,7 +53,7 @@ dependencies {
 
 // configure the kotlin extension
 kotlin {
-    // set the toolchain version that is required to build this project
+    // set the toolchain version required to build this project
     // replaces sourceCompatibility and targetCompatibility as it also sets these implicitly
     // https://kotlinlang.org/docs/gradle-configure-project.html#gradle-java-toolchains-support
     jvmToolchain(21)
@@ -106,13 +108,53 @@ testing {
     }
 }
 
+// configure publishing for the sonatype portal
+mavenPublishing {
+    // add the central portal of Sonatype
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+
+    // configure mandatory metadata for Maven Central
+    pom {
+        name.set("Open Match Client")
+        description.set("An Open Match Client for Kotlin/Java.")
+        inceptionYear.set("2025")
+        url.set("https://github.com/scrayosnet/open-match-kotlin-client/")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/license/mit")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("scrayos")
+                name.set("Joshua Dean Küpper")
+                url.set("https://github.com/scrayos/")
+            }
+        }
+        scm {
+            url.set("https://github.com/scrayosnet/open-match-kotlin-client/")
+            connection.set("scm:git:git://github.com/scrayosnet/open-match-kotlin-client.git")
+            developerConnection.set("scm:git:ssh://git@github.com/scrayosnet/open-match-kotlin-client.git")
+        }
+    }
+
+    // sign all exported publications
+    signAllPublications()
+}
+
 // configure the publishing in the maven repository
 publishing {
     // define the repositories that shall be used for publishing
     repositories {
-        maven("https://gitlab.scrayos.net/api/v4/projects/118/packages/maven") {
-            name = "scrayosnet"
-            credentials(PasswordCredentials::class)
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/scrayosnet/open-match-kotlin-client")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
         }
     }
 }
@@ -136,12 +178,43 @@ ktlint {
     }
 }
 
+// configure dokka
+dokka {
+    dokkaSourceSets {
+        configureEach {
+            moduleName.set("Open Match Kotlin Client")
+            includes.from("packages.md")
+            jdkVersion.set(21)
+            samples.from("$projectDir/samples")
+
+            sourceLink {
+                localDirectory.set(projectDir.resolve("src"))
+                remoteUrl.set(URI("https://github.com/scrayosnet/open-match-kotlin-client/tree/main/src"))
+                remoteLineSuffix.set("#L")
+            }
+
+            perPackageOption {
+                matchingRegex.set("openmatch.*")
+                suppress = true
+            }
+
+            perPackageOption {
+                matchingRegex.set("grpc.gateway.protoc_gen_openapiv2.*")
+                suppress = true
+            }
+        }
+    }
+}
+
 // configure sonarqube plugin
 sonarqube {
     properties {
-        property("sonar.projectName", "open-match-client")
+        property("sonar.projectKey", "scrayosnet_open-match-kotlin-client")
+        property("sonar.organization", "scrayosnet")
+        property("sonar.projectName", "open-match-kotlin-client")
         property("sonar.projectVersion", version)
         property("sonar.projectDescription", description!!)
+        property("sonar.host.url", "https://sonarcloud.io")
         property(
             "sonar.kotlin.ktlint.reportPaths",
             "build/reports/ktlint/ktlintKotlinScriptCheck/ktlintKotlinScriptCheck.xml," +
@@ -168,7 +241,7 @@ tasks {
 
     javadoc {
         // exclude the generated protobuf files
-        exclude("agones/dev/sdk/**")
+        exclude("openmatch/**")
         exclude("grpc/gateway/protoc_gen_openapiv2/**")
     }
 }

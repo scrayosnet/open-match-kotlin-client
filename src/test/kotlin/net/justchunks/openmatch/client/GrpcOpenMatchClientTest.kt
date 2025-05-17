@@ -41,7 +41,7 @@ internal class GrpcOpenMatchClientTest {
 
     @Container
     private val redisContainer: GenericContainer<*> = GenericContainer(
-        DockerImageName.parse("docker.io/redis:7"),
+        DockerImageName.parse("docker.io/redis:8"),
     )
         .withNetworkAliases("redis")
         .withNetwork(SHARED_NETWORK)

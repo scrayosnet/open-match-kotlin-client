@@ -20,8 +20,8 @@ import openmatch.Messages.Ticket
  * that have been performed by other clients and therefore are only read passively by this client. Those changes are not
  * cached and are directly transferred to the frontend of Open Match.
  *
- * All interfaces are executed asynchronously (through coroutines) and return their results after the response from the
- * SDK has been recorded. Interfaces that work with streams of data are also executed asynchronously and are wrapped
+ * All interfaces are executed asynchronously (through coroutines) and return their results after the response from OM
+ * has been recorded. Interfaces that work with streams of data are also executed asynchronously and are wrapped
  * into [flows][Flow] to be compatible with the coroutines. Errors will always be returned immediately if they are
  * discovered and the operation will only be automatically retried, if the returned condition can be recovered from.
  *
@@ -29,6 +29,8 @@ import openmatch.Messages.Ticket
  * our structure but generally adhere to the official interface definitions. The client will always be kept compatible
  * with the latest official recommendations and should therefore be used directly, since the individual steps are
  * designed to be atomic.
+ *
+ * @sample grpcSample
  *
  * @see <a href="https://open-match.dev/site/docs/reference/api/">Open Match API Documentation</a>
  */
@@ -80,7 +82,7 @@ interface OpenMatchClient : AutoCloseable {
      * by this client as well as for external changes applied by other clients or other components of the Open Match
      * matchmaking process. The item always contains the most recent state of the [Assignment].
      *
-     * To unsubscribe from the updates, the returned [Flow] can be cancelled and the underlying stream will be closed
+     * To unsubscribe from the updates, the returned [Flow] can be cancelled, and the underlying stream will be closed
      * and cleaned up. It can be started to subscribe again after that, by invoking this method again and obtaining a
      * new, independent [Flow].
      *
@@ -91,6 +93,8 @@ interface OpenMatchClient : AutoCloseable {
      *
      * @return A [Flow] of updated [assignment][Assignment] resources that returns a new element every time there was an
      * update to the underlying data. Always contains the whole dataset and not only the modified fields.
+     *
+     * @sample watchAssignmentsSample
      *
      * @see <a href="https://open-match.dev/site/docs/reference/api/#frontendservice">Open Match Documentation</a>
      */

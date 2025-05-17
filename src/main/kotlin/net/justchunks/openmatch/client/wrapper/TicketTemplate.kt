@@ -102,7 +102,7 @@ class TicketTemplate private constructor(
 
         /**
          * Creates a new immutable [TicketTemplate] with the properties configured in this [builder][Builder].
-         * Subsequent changes to this [builder][Builder] will no longer affect the returned instance. Multiple
+         * Later changes to this [builder][Builder] will no longer affect the returned instance. Multiple
          * independent instances can be constructed using this method without invalidating this [builder][Builder].
          *
          * @return A new immutable [TicketTemplate] with the properties configured in this [builder][Builder].
