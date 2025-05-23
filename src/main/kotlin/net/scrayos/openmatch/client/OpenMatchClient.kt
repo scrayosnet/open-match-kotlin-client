@@ -1,7 +1,7 @@
-package net.justchunks.openmatch.client
+package net.scrayos.openmatch.client
 
 import kotlinx.coroutines.flow.Flow
-import net.justchunks.openmatch.client.wrapper.TicketTemplate
+import net.scrayos.openmatch.client.wrapper.TicketTemplate
 import openmatch.Frontend.AcknowledgeBackfillResponse
 import openmatch.Frontend.WatchAssignmentsResponse
 import openmatch.Messages.Assignment

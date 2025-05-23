@@ -6,8 +6,8 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 import java.net.URI
 
 // provide general GAV coordinates
-group = "net.justchunks"
-version = "5.2.0-SNAPSHOT"
+group = "net.scrayos"
+version = "5.2.0"
 description = "Open Match Java/Kotlin Client"
 
 // hook the plugins for the builds

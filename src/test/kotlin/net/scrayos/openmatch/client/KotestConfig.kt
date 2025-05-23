@@ -1,4 +1,4 @@
-package net.justchunks.openmatch.client
+package net.scrayos.openmatch.client
 
 import io.kotest.core.config.AbstractProjectConfig
 

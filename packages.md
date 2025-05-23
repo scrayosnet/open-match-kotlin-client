@@ -11,12 +11,12 @@ be to manually implement the gRPC calls on at the game servers (frontend). There
 solution on-top of the Protobuf definitions that Open Match already provides. We'll try to update the Open Match
 mappings every time that there is an API change.
 
-# Package net.justchunks.openmatch.client
+# Package net.scrayos.openmatch.client
 
 The main package of the Client implementation that hosts the overall interface as well as the concrete implementations.
 This package can be used to instantiate the desired implementation and to start the communication with the Frontend.
 
-# Package net.justchunks.openmatch.client.wrapper
+# Package net.scrayos.openmatch.client.wrapper
 
 The package that contains the wrappers of the raw gRPC objects so that those objects can be easier used and constructed
 without touching any of the gRPC internals.

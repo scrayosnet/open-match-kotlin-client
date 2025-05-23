@@ -1,4 +1,4 @@
-package net.justchunks.openmatch.client.wrapper
+package net.scrayos.openmatch.client.wrapper
 
 import com.google.protobuf.Any
 import com.google.protobuf.BoolValue
@@ -11,8 +11,8 @@ import com.google.protobuf.Int64Value
 import com.google.protobuf.StringValue
 import com.google.protobuf.UInt32Value
 import com.google.protobuf.UInt64Value
-import net.justchunks.openmatch.client.wrapper.TicketTemplate.Builder
-import net.justchunks.openmatch.client.wrapper.TicketTemplate.Companion.newBuilder
+import net.scrayos.openmatch.client.wrapper.TicketTemplate.Builder
+import net.scrayos.openmatch.client.wrapper.TicketTemplate.Companion.newBuilder
 import openmatch.Messages.Backfill
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -853,7 +853,7 @@ internal class TicketTemplateTest {
         }
 
         @ParameterizedTest(name = "#addExtension({0})")
-        @MethodSource("net.justchunks.openmatch.client.wrapper.TicketTemplateTest#testBytes")
+        @MethodSource("net.scrayos.openmatch.client.wrapper.TicketTemplateTest#testBytes")
         @DisplayName("Should add bytes extension (extensions)")
         fun shouldAddBytesExtension(value: ByteArray) {
             // given

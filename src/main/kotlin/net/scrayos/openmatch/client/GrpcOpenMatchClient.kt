@@ -1,4 +1,4 @@
-package net.justchunks.openmatch.client
+package net.scrayos.openmatch.client
 
 import io.grpc.Channel
 import io.grpc.ManagedChannel
@@ -6,9 +6,9 @@ import io.grpc.ManagedChannelBuilder
 import io.grpc.Status
 import io.grpc.StatusException
 import kotlinx.coroutines.flow.Flow
-import net.justchunks.openmatch.client.GrpcOpenMatchClient.Companion.FRONTEND_HOST_ENV_KEY
-import net.justchunks.openmatch.client.GrpcOpenMatchClient.Companion.FRONTEND_PORT_ENV_KEY
-import net.justchunks.openmatch.client.wrapper.TicketTemplate
+import net.scrayos.openmatch.client.GrpcOpenMatchClient.Companion.FRONTEND_HOST_ENV_KEY
+import net.scrayos.openmatch.client.GrpcOpenMatchClient.Companion.FRONTEND_PORT_ENV_KEY
+import net.scrayos.openmatch.client.wrapper.TicketTemplate
 import openmatch.Frontend
 import openmatch.Frontend.AcknowledgeBackfillRequest
 import openmatch.Frontend.AcknowledgeBackfillResponse

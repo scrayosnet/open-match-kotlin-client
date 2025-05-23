@@ -1,4 +1,4 @@
-package net.justchunks.openmatch.client.wrapper
+package net.scrayos.openmatch.client.wrapper
 
 import com.google.protobuf.Any
 import com.google.protobuf.BoolValue

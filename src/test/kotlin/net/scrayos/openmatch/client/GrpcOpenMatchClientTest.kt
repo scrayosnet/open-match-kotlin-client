@@ -1,4 +1,4 @@
-package net.justchunks.openmatch.client
+package net.scrayos.openmatch.client
 
 import com.google.protobuf.Any
 import com.google.protobuf.InvalidProtocolBufferException
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.runTest
-import net.justchunks.openmatch.client.wrapper.TicketTemplate
+import net.scrayos.openmatch.client.wrapper.TicketTemplate
 import openmatch.Frontend.WatchAssignmentsResponse
 import openmatch.Messages
 import openmatch.Messages.Backfill
