@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.google.protobuf.gradle.id
-import com.vanniktech.maven.publish.SonatypeHost
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 import java.net.URI
 
@@ -45,6 +44,7 @@ dependencies {
     // specify test dependencies
     testImplementation(libs.kotlin.test)
     testImplementation(libs.bundles.kotest)
+    testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.log4j)
     testRuntimeOnly(libs.grpc.netty)
@@ -110,7 +110,7 @@ testing {
 // configure publishing for the sonatype portal
 mavenPublishing {
     // add the central portal of Sonatype
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    publishToMavenCentral(automaticRelease = true)
 
     // configure mandatory metadata for Maven Central
     pom {
