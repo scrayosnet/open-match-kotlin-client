@@ -35,7 +35,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@Disabled("Integration tests are currently not possible")
 @Testcontainers
 internal class GrpcOpenMatchClientTest {
 
@@ -147,14 +146,14 @@ internal class GrpcOpenMatchClientTest {
     }
 
     @Test
-    @DisplayName("Should not throw when deleting non-existing ticket")
+    @DisplayName("Should not throw when deleting a non-existing ticket")
     fun shouldNotThrowWhenDeletingNonExistingTicket() = runTest {
         // when, then
         client.deleteTicket("test")
     }
 
     @Test
-    @DisplayName("Should get existing ticket")
+    @DisplayName("Should get an existing ticket")
     fun shouldGetTicket() = runTest {
         // given
         val originalTicket = client.createTicket(TicketTemplate.newBuilder().build())
@@ -168,7 +167,7 @@ internal class GrpcOpenMatchClientTest {
     }
 
     @Test
-    @DisplayName("Should not get non-existing ticket")
+    @DisplayName("Should not get a non-existing ticket")
     fun shouldNotGetTicket() = runTest {
         // when
         val retrievedTicket = client.getTicket("non-existing")
@@ -518,7 +517,7 @@ internal class GrpcOpenMatchClientTest {
     }
 
     @Test
-    @DisplayName("Should throw INVALID_ARGUMENT on update backfill without backfill id")
+    @DisplayName("Should throw INVALID_ARGUMENT on update backfill without a backfill id")
     fun shouldThrowOnUpdateBackfillWithoutId() = runTest {
         // when, then
         val exception = assertFailsWith<StatusException> {
@@ -668,7 +667,7 @@ internal class GrpcOpenMatchClientTest {
     }
 
     @Test
-    @DisplayName("Should throw on any method if channel is closed")
+    @DisplayName("Should throw on any method if a channel is closed")
     fun shouldThrowIfChannelIsClosed() = runTest {
         // given
         client.close()
@@ -682,7 +681,7 @@ internal class GrpcOpenMatchClientTest {
     }
 
     @Test
-    @DisplayName("Close should refresh interrupted flag")
+    @DisplayName("Close should refresh an interrupted flag")
     fun closeShouldBeInterruptable() {
         // given
         Thread.currentThread().interrupt()
@@ -705,7 +704,7 @@ internal class GrpcOpenMatchClientTest {
     }
 
     @Test
-    @DisplayName("Automatic port should fall back to default port")
+    @DisplayName("Automatic port should fall back to the default port")
     fun automaticPortShouldFallBack() {
         // when
         val defaultPort: Int = GrpcOpenMatchClient.FRONTEND_PORT

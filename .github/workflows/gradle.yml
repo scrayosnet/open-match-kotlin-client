@@ -8,19 +8,19 @@ jobs:
     steps:
 
     - name: Checkout sources
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
         lfs: true
 
     - name: Set up Java
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'corretto'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@v5
 
     - name: Execute Gradle Build
       run: ./gradlew build
@@ -30,8 +30,21 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-    - name: Upload analysis results to GitHub
-      uses: github/codeql-action/upload-sarif@v3
+    - name: Upload ktlint (script)
+      uses: github/codeql-action/upload-sarif@v4
       with:
-        sarif_file: build/reports
-        wait-for-processing: true
+        sarif_file: build/reports/ktlint/ktlintKotlinScriptCheck/ktlintKotlinScriptCheck.sarif
+        category: ktlint-script
+
+    - name: Upload ktlint (main)
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.sarif
+        category: ktlint-main
+
+    - name: Upload ktlint (test)
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: build/reports/ktlint/ktlintTestSourceSetCheck/ktlintTestSourceSetCheck.sarif
+        category: ktlint-test
+
