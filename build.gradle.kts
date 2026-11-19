@@ -6,7 +6,7 @@ import java.net.URI
 
 // provide general GAV coordinates
 group = "net.scrayos"
-version = "6.1.1-SNAPSHOT"
+version = "6.1.1"
 description = "Open Match Java/Kotlin Client"
 
 // hook the plugins for the builds

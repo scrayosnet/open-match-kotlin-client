@@ -44,7 +44,7 @@ After your instance is up and running, you have to add Open Match Kotlin Client 
 ```kotlin
 dependencies {
     // make sure to specify the latest version
-    api("net.scrayos", "open-match-kotlin-client", "6.1.0")
+    api("net.scrayos", "open-match-kotlin-client", "6.1.1")
 
     // choose your own gRPC runtime or use an existing one
     runtimeOnly("io.grpc", "grpc-netty", "1.84.3")
